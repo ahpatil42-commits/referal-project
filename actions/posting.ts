@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
-export async function createReferralPosting(data: { jobTitle: string; company: string; jobUrl?: string; description?: string }) {
+export async function createReferralPosting(data: { jobTitle: string; company: string; jobUrl?: string; description?: string; experience?: string; skills?: string; location?: string }) {
   try {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -22,6 +22,9 @@ export async function createReferralPosting(data: { jobTitle: string; company: s
         company: data.company,
         jobUrl: data.jobUrl || null,
         description: data.description || null,
+        experience: data.experience || null,
+        skills: data.skills || null,
+        location: data.location || null,
         isActive: true,
       },
     });

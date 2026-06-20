@@ -105,6 +105,9 @@ model ReferralPosting {
   company     String
   jobUrl      String?
   description String?  // Optional JD summary
+  experience  String?
+  skills      String?
+  location    String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

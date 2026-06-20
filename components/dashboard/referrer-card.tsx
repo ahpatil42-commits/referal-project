@@ -15,7 +15,7 @@ interface ReferrerCardProps {
     maxReferrals: number;
     linkedinUrl: string | null;
     user: { email: string; name: string | null };
-    referralPostings?: { id: string; jobTitle: string; company: string; jobUrl: string | null }[];
+    referralPostings?: { id: string; jobTitle: string; company: string; jobUrl: string | null; experience: string | null; skills: string | null; location: string | null }[];
   };
   matchScore?: number;
 }
@@ -161,26 +161,42 @@ export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
             <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Currently Referring For:</p>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
               {referrer.referralPostings.map(posting => (
-                <a
-                  key={posting.id}
-                  href={posting.jobUrl || "#"}
-                  target={posting.jobUrl ? "_blank" : undefined}
-                  rel={posting.jobUrl ? "noopener noreferrer" : undefined}
-                  style={{
-                    fontSize: "0.8rem",
-                    padding: "0.3rem 0.75rem",
-                    borderRadius: "6px",
-                    background: "rgba(167, 139, 250, 0.15)",
-                    border: "1px solid rgba(167, 139, 250, 0.3)",
-                    color: "var(--color-purple)",
-                    textDecoration: "none",
-                    display: "inline-block",
-                    fontWeight: 500,
-                  }}
-                  title={posting.jobUrl ? "View Job Description" : ""}
-                >
-                  {posting.jobTitle} {posting.jobUrl && "↗"}
-                </a>
+                <div key={posting.id} style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <a
+                      href={posting.jobUrl || "#"}
+                      target={posting.jobUrl ? "_blank" : undefined}
+                      rel={posting.jobUrl ? "noopener noreferrer" : undefined}
+                      style={{
+                        fontSize: "0.8rem",
+                        padding: "0.3rem 0.75rem",
+                        borderRadius: "6px",
+                        background: "rgba(167, 139, 250, 0.15)",
+                        border: "1px solid rgba(167, 139, 250, 0.3)",
+                        color: "var(--color-purple)",
+                        textDecoration: "none",
+                        display: "inline-block",
+                        fontWeight: 500,
+                      }}
+                      title={posting.jobUrl ? "View Job Description" : ""}
+                    >
+                      {posting.jobTitle} {posting.jobUrl && "↗"}
+                    </a>
+                  </div>
+                  {(posting.location || posting.experience || posting.skills) && (
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", paddingLeft: "0.25rem", marginTop: "0.25rem" }}>
+                      {posting.location && (
+                        <span style={{ fontSize: "0.7rem", color: "var(--color-text-secondary)" }}>📍 {posting.location}</span>
+                      )}
+                      {posting.experience && (
+                        <span style={{ fontSize: "0.7rem", color: "var(--color-text-secondary)" }}>⏱ {posting.experience}</span>
+                      )}
+                      {posting.skills && (
+                        <span style={{ fontSize: "0.7rem", color: "var(--color-text-secondary)" }}>⚡ {posting.skills}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>

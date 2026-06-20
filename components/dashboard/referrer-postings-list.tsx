@@ -12,6 +12,9 @@ type ReferralPosting = {
   company: string;
   jobUrl: string | null;
   description: string | null;
+  experience?: string | null;
+  skills?: string | null;
+  location?: string | null;
   isActive: boolean;
 };
 
@@ -78,6 +81,23 @@ export function ReferrerPostingsList({ postings, defaultCompany }: { postings: R
                     View JD →
                   </a>
                 )}
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.75rem" }}>
+                  {posting.location && (
+                    <span style={{ fontSize: "0.75rem", padding: "0.2rem 0.6rem", borderRadius: "9999px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--color-text-secondary)" }}>
+                      📍 {posting.location}
+                    </span>
+                  )}
+                  {posting.experience && (
+                    <span style={{ fontSize: "0.75rem", padding: "0.2rem 0.6rem", borderRadius: "9999px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--color-text-secondary)" }}>
+                      ⏱ {posting.experience}
+                    </span>
+                  )}
+                  {posting.skills && (
+                    <span style={{ fontSize: "0.75rem", padding: "0.2rem 0.6rem", borderRadius: "9999px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--color-text-secondary)" }}>
+                      ⚡ {posting.skills}
+                    </span>
+                  )}
+                </div>
                 {posting.description && (
                   <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginTop: "0.75rem", lineHeight: 1.5, background: "rgba(0,0,0,0.2)", padding: "0.75rem", borderRadius: "8px" }}>
                     {posting.description}

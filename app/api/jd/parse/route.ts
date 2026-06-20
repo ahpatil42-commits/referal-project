@@ -21,6 +21,9 @@ export async function POST(request: Request) {
         jobTitle: "Software Engineer",
         company: "Example Corp",
         description: "We are looking for a talented engineer...",
+        experience: "3+ years",
+        skills: "React, Node.js",
+        location: "Remote",
         coverNote: "Hi! I saw the posting and would love a referral. Thanks!"
       });
     }
@@ -33,6 +36,9 @@ export async function POST(request: Request) {
       prompt = `You are an expert HR assistant. Analyze the following Job Description (JD) and extract the key information into a JSON object with the exact following keys:
 - "jobTitle": The official job title.
 - "company": The company name (if found, otherwise an empty string).
+- "experience": Required years of experience (if found, otherwise an empty string).
+- "skills": Key skills required, as a comma-separated string (if found, otherwise an empty string).
+- "location": Job location or "Remote" (if found, otherwise an empty string).
 - "description": A concise, 3-4 sentence summary of the role's responsibilities and top requirements.
 
 Job Description Text:

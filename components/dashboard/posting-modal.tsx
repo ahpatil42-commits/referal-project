@@ -12,6 +12,9 @@ const schema = z.object({
   jobTitle: z.string().min(2, "Job title is required"),
   company: z.string().min(2, "Company is required"),
   jobUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  experience: z.string().max(100).optional(),
+  skills: z.string().max(200).optional(),
+  location: z.string().max(100).optional(),
   description: z.string().max(2000).optional(),
 });
 
@@ -56,6 +59,9 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
 
       if (data.jobTitle) setValue("jobTitle", data.jobTitle, { shouldValidate: true });
       if (data.company) setValue("company", data.company, { shouldValidate: true });
+      if (data.experience) setValue("experience", data.experience, { shouldValidate: true });
+      if (data.skills) setValue("skills", data.skills, { shouldValidate: true });
+      if (data.location) setValue("location", data.location, { shouldValidate: true });
       if (data.description) setValue("description", data.description, { shouldValidate: true });
       
       toast.success("Autofilled from Job Description!");
@@ -201,6 +207,24 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
             <label className="form-label">Job Posting URL <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
             <input className={`form-input ${errors.jobUrl ? "error" : ""}`} placeholder="https://careers.company.com/..." {...register("jobUrl")} />
             {errors.jobUrl && <p className="form-error">✕ {errors.jobUrl.message}</p>}
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+            <div>
+              <label className="form-label">Experience <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
+              <input className={`form-input ${errors.experience ? "error" : ""}`} placeholder="e.g. 3+ years" {...register("experience")} />
+              {errors.experience && <p className="form-error">✕ {errors.experience.message}</p>}
+            </div>
+            <div>
+              <label className="form-label">Skills <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
+              <input className={`form-input ${errors.skills ? "error" : ""}`} placeholder="e.g. React, Node.js" {...register("skills")} />
+              {errors.skills && <p className="form-error">✕ {errors.skills.message}</p>}
+            </div>
+            <div>
+              <label className="form-label">Location <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
+              <input className={`form-input ${errors.location ? "error" : ""}`} placeholder="e.g. Remote, NY" {...register("location")} />
+              {errors.location && <p className="form-error">✕ {errors.location.message}</p>}
+            </div>
           </div>
 
           <div>
