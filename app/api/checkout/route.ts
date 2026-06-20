@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import Stripe from "stripe";
 import { db } from "@/lib/db";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_dummy_123", {
   apiVersion: "2026-05-27.dahlia",
 });
 
