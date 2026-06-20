@@ -453,6 +453,34 @@ body {
   overflow: hidden;
 }
 
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); transform: scale(1); }
+  50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.6); transform: scale(1.02); }
+  100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); transform: scale(1); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+.animate-float-delayed-more {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 4s;
+}
+
 /* === Link Styles === */
 a.text-link {
   color: var(--color-primary-light);
