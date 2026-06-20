@@ -22,20 +22,17 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Save file locally for production readiness
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", "profiles");
-    await mkdir(uploadsDir, { recursive: true });
-    
     // Validate image extension (very basic)
     const ext = path.extname(file.name).toLowerCase();
     if (![".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(ext)) {
       return NextResponse.json({ error: "Invalid image format" }, { status: 400 });
     }
 
-    const fileName = `${crypto.randomUUID()}${ext}`;
-    const filePath = path.join(uploadsDir, fileName);
-    await writeFile(filePath, buffer);
-    const imageUrl = `/uploads/profiles/${fileName}`;
+    // Save image as a Base64 Data URI string directly in the DB
+    // This avoids Vercel's EROFS Read-Only File System error without needing AWS S3
+    const mimeType = ext === ".jpg" ? "image/jpeg" : `image/${ext.slice(1)}`;
+    const base64String = buffer.toString("base64");
+    const imageUrl = `data:${mimeType};base64,${base64String}`;
 
     // Update user record in db
     await db.user.update({
