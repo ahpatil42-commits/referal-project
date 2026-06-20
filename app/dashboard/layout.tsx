@@ -64,7 +64,7 @@ export default async function DashboardLayout({
             position: "relative"
           }}
         >
-          <div style={{ position: "absolute", top: "2rem", right: "2rem", zIndex: 50 }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
             <NotificationBell />
           </div>
           {children}

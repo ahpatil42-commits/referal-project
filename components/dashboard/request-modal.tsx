@@ -94,6 +94,7 @@ export function RequestModal({
         alignItems: "center",
         justifyContent: "center",
         padding: "1.5rem",
+        paddingLeft: "calc(220px + 1.5rem)",
       }}
     >
       {/* Modal */}
