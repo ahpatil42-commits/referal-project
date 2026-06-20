@@ -45,7 +45,7 @@ export default async function BrowseReferrersPage(props: Props) {
       },
       referralPostings: {
         where: { isActive: true },
-        select: { id: true, jobTitle: true, jobUrl: true }
+        select: { id: true, jobTitle: true, jobUrl: true, company: true }
       }
     },
     orderBy: { createdAt: "desc" },

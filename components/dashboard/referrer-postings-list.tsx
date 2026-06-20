@@ -37,7 +37,7 @@ export function ReferrerPostingsList({ postings, defaultCompany }: { postings: R
   };
 
   return (
-    <div style={{ marginTop: "3rem" }}>
+    <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <div>
           <h2 style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-text-primary)" }}>

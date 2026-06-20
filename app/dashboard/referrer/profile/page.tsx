@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
-import { ReferrerProfileForm } from "@/components/dashboard/referrer-profile-form";
 import { ReferrerPostingsList } from "@/components/dashboard/referrer-postings-list";
 
 export const metadata = { title: "My Profile | ReferralAI" };
@@ -24,31 +23,16 @@ export default async function ReferrerProfilePage() {
     <div style={{ maxWidth: "680px" }}>
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-text-primary)" }}>
-          My Profile 👤
+          Manage Roles 📋
         </h1>
         <p style={{ color: "var(--color-text-secondary)", marginTop: "0.25rem" }}>
-          Complete your profile so seekers can find and request referrals from you.
+          Add specific roles you are willing to refer candidates for.
         </p>
-      </div>
-
-      <div className="glass-panel" style={{ padding: "2rem" }}>
-        <ReferrerProfileForm
-          initialData={{
-            company:        profile?.company        ?? "",
-            jobTitle:       profile?.jobTitle       ?? "",
-            yearsAtCompany: profile?.yearsAtCompany ?? undefined,
-            bio:            profile?.bio            ?? "",
-            corporateEmail: profile?.corporateEmail ?? "",
-            linkedinUrl:    profile?.linkedinUrl    ?? "",
-            maxReferrals:   profile?.maxReferrals   ?? 3,
-            image:          user?.image             ?? null,
-          }}
-        />
       </div>
 
       <ReferrerPostingsList 
         postings={profile?.referralPostings || []} 
-        defaultCompany={profile?.company || ""}
+        defaultCompany={profile?.referralPostings?.[0]?.company || ""}
       />
     </div>
   );

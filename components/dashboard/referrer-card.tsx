@@ -15,7 +15,7 @@ interface ReferrerCardProps {
     maxReferrals: number;
     linkedinUrl: string | null;
     user: { email: string; name: string | null };
-    referralPostings?: { id: string; jobTitle: string; jobUrl: string | null }[];
+    referralPostings?: { id: string; jobTitle: string; company: string; jobUrl: string | null }[];
   };
   matchScore?: number;
 }
@@ -258,7 +258,7 @@ export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
         <RequestModal
           referrerId={referrer.id}
           referrerName={displayName}
-          referrerCompany={referrer.company ?? ""}
+          referrerCompany={referrer.company || referrer.referralPostings?.[0]?.company || ""}
           onClose={() => setShowModal(false)}
         />
       )}

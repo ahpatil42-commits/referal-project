@@ -24,7 +24,7 @@ const REFERRER_NAV: NavItem[] = [
   { href: "/dashboard/referrer",           label: "Overview",     icon: "⊞" },
   { href: "/dashboard/referrer/requests",  label: "Requests",     icon: "◫" },
   { href: "/dashboard/referrer/referrals", label: "My Referrals", icon: "✓" },
-  { href: "/dashboard/referrer/profile",   label: "My Profile",   icon: "◉" },
+  { href: "/dashboard/referrer/profile",   label: "Manage Roles", icon: "📋" },
 ];
 
 interface SidebarProps {

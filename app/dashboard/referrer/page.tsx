@@ -33,8 +33,6 @@ export default async function ReferrerDashboardPage() {
   const pending  = referrerProfile?.receivedRequests.filter((r) => r.status === "PENDING").length  ?? 0;
   const accepted = referrerProfile?.receivedRequests.filter((r) => r.status === "ACCEPTED").length ?? 0;
 
-  const isProfileComplete = !!(referrerProfile?.company && referrerProfile?.jobTitle);
-
   return (
     <div style={{ maxWidth: "1100px" }}>
       <div style={{ marginBottom: "2rem" }}>
@@ -45,50 +43,6 @@ export default async function ReferrerDashboardPage() {
           {session.user.email}
         </p>
       </div>
-
-      {/* Profile completion banner */}
-      {!isProfileComplete && (
-        <div
-          className="glass-panel"
-          style={{
-            padding: "1rem 1.5rem",
-            marginBottom: "1.75rem",
-            borderColor: "rgba(167,139,250,0.35)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "1rem",
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <span style={{ fontSize: "1.5rem" }}>✍️</span>
-            <div>
-              <p style={{ fontWeight: 600, color: "var(--color-text-primary)", fontSize: "0.95rem" }}>
-                Complete your profile
-              </p>
-              <p style={{ color: "var(--color-text-muted)", fontSize: "0.825rem" }}>
-                Seekers can only send you requests after you add your company and job title.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/dashboard/referrer/profile"
-            style={{
-              padding: "0.5rem 1.25rem",
-              borderRadius: "var(--radius-md)",
-              background: "var(--color-purple)",
-              color: "white",
-              textDecoration: "none",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-            }}
-          >
-            Set up profile →
-          </Link>
-        </div>
-      )}
 
       {/* Stats */}
       <div
@@ -116,7 +70,7 @@ export default async function ReferrerDashboardPage() {
         {[
           { href: "/dashboard/referrer/requests",  emoji: "📥", label: "Review Requests",  desc: "Accept or reject incoming requests" },
           { href: "/dashboard/referrer/referrals", emoji: "✅", label: "My Referrals",      desc: "View candidates you've accepted" },
-          { href: "/dashboard/referrer/profile",   emoji: "👤", label: "Edit Profile",      desc: "Update your company and referral info" },
+          { href: "/dashboard/referrer/profile",   emoji: "📋", label: "Manage Roles",      desc: "Add and manage roles you are referring for" },
         ].map((card) => (
           <Link key={card.href} href={card.href} style={{ textDecoration: "none", display: "block", height: "100%" }}>
             <div className="glass-panel dashboard-card" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
