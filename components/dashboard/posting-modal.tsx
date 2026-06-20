@@ -93,7 +93,7 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
       <div
         className="glass-panel animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
-        style={{ width: "100%", maxWidth: "520px", padding: "2rem", zIndex: 101, maxHeight: "90vh", overflowY: "auto" }}
+        style={{ width: "100%", maxWidth: "700px", padding: "2rem", zIndex: 101, maxHeight: "90vh", overflowY: "auto" }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
           <div>

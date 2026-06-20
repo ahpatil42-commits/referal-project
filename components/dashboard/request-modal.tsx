@@ -101,7 +101,7 @@ export function RequestModal({
       <div
         className="glass-panel animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
-        style={{ width: "100%", maxWidth: "520px", padding: "2rem", zIndex: 101 }}
+        style={{ width: "100%", maxWidth: "600px", padding: "2rem", zIndex: 101 }}
       >
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
