@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { GoogleGenAI } from "@google/genai";
 import { auth } from "@/auth";
 // Use require for pdf-parse as it doesn't have a default export
 const pdfParse = require("pdf-parse");
@@ -55,32 +56,51 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
     }
 
-    // Simulated Extraction Heuristics (Since we're not using OpenAI keys)
-    const lowerText = text.toLowerCase();
-    
-    // 1. Find common skills
-    const commonSkills = ["react", "node", "typescript", "python", "java", "c++", "aws", "docker", "kubernetes", "sql", "graphql", "machine learning", "ui/ux", "figma"];
-    const foundSkills = commonSkills.filter(skill => lowerText.includes(skill.toLowerCase()));
-
-    // 2. Find target roles
-    const commonRoles = ["software engineer", "frontend", "backend", "full stack", "data scientist", "product manager", "designer"];
-    let primaryRole = "Software Engineer"; // fallback
-    for (const role of commonRoles) {
-      if (lowerText.includes(role)) {
-        primaryRole = role.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-        break;
-      }
+    // Check if GEMINI_API_KEY is available
+    if (!process.env.GEMINI_API_KEY) {
+      console.warn("GEMINI_API_KEY is missing. Falling back to simple heuristics.");
+      // Fallback heuristics just in case
+      return NextResponse.json({
+        headline: "Software Professional",
+        bio: "Experienced professional looking for new opportunities.",
+        skills: JSON.stringify(["React", "Node.js", "TypeScript"]),
+        targetRoles: JSON.stringify(["Software Engineer"]),
+        resumeStoragePath
+      });
     }
 
-    // 3. Generate bio
-    const headline = `${primaryRole} | Specializing in ${foundSkills.slice(0, 3).join(", ") || "building great software"}`;
-    const bio = `I am a ${primaryRole} with experience in ${foundSkills.slice(0, 5).join(", ")}. I'm highly motivated and looking for new opportunities to grow and contribute to impactful projects.`;
+    // Call Gemini AI to parse the resume accurately
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    
+    const prompt = `You are an expert technical recruiter. Analyze the following resume text and extract the information as a JSON object with the exact following keys:
+- "headline": A professional headline based on their experience (e.g., "Senior Full Stack Engineer").
+- "bio": A short, compelling professional summary written in the first person (max 3 sentences).
+- "skills": An array of their top technical skills (max 10 strings).
+- "targetRoles": An array of potential job roles this person is fit for (e.g., ["Software Engineer", "Frontend Developer"]).
+
+Resume Text:
+${text.substring(0, 15000)}
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      }
+    });
+
+    if (!response.text) {
+      throw new Error("Failed to generate content from Gemini");
+    }
+
+    const parsedData = JSON.parse(response.text);
 
     return NextResponse.json({
-      headline,
-      bio,
-      skills: JSON.stringify(foundSkills.slice(0, 10)),
-      targetRoles: JSON.stringify([primaryRole]),
+      headline: parsedData.headline || "Professional",
+      bio: parsedData.bio || "",
+      skills: JSON.stringify(parsedData.skills || []),
+      targetRoles: JSON.stringify(parsedData.targetRoles || []),
       resumeStoragePath
     });
   } catch (error) {
