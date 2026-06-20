@@ -41,7 +41,6 @@ export function AdminClient({ initialUsers }: { initialUsers: User[] }) {
         <thead>
           <tr style={{ borderBottom: "1px solid var(--glass-border)" }}>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Name</th>
-            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Email</th>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Role</th>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Joined</th>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Status</th>
