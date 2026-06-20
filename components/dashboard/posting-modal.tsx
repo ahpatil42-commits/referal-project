@@ -12,10 +12,10 @@ const schema = z.object({
   jobTitle: z.string().min(2, "Job title is required"),
   company: z.string().min(2, "Company is required"),
   jobUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  experience: z.string().max(100).optional(),
-  skills: z.string().max(200).optional(),
-  location: z.string().max(100).optional(),
-  description: z.string().max(2000).optional(),
+  experience: z.string().optional(),
+  skills: z.string().optional(),
+  location: z.string().optional(),
+  description: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -213,17 +213,17 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
             <div>
               <label className="form-label">Experience <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
-              <input className={`form-input ${errors.experience ? "error" : ""}`} placeholder="e.g. 3+ years" {...register("experience")} />
+              <textarea className={`form-input ${errors.experience ? "error" : ""}`} rows={2} placeholder="e.g. 3+ years" style={{ resize: "vertical" }} {...register("experience")} />
               {errors.experience && <p className="form-error">✕ {errors.experience.message}</p>}
             </div>
             <div>
               <label className="form-label">Skills <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
-              <input className={`form-input ${errors.skills ? "error" : ""}`} placeholder="e.g. React, Node.js" {...register("skills")} />
+              <textarea className={`form-input ${errors.skills ? "error" : ""}`} rows={2} placeholder="e.g. React, Node.js" style={{ resize: "vertical" }} {...register("skills")} />
               {errors.skills && <p className="form-error">✕ {errors.skills.message}</p>}
             </div>
             <div>
               <label className="form-label">Location <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
-              <input className={`form-input ${errors.location ? "error" : ""}`} placeholder="e.g. Remote, NY" {...register("location")} />
+              <textarea className={`form-input ${errors.location ? "error" : ""}`} rows={2} placeholder="e.g. Remote, NY" style={{ resize: "vertical" }} {...register("location")} />
               {errors.location && <p className="form-error">✕ {errors.location.message}</p>}
             </div>
           </div>
@@ -232,7 +232,7 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
             <label className="form-label">Summary / Notes <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
             <textarea
               className={`form-input ${errors.description ? "error" : ""}`}
-              rows={3}
+              rows={5}
               placeholder="Looking for 3+ years experience with React..."
               style={{ resize: "vertical" }}
               {...register("description")}
