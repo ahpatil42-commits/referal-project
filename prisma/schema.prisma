@@ -79,6 +79,11 @@ model ReferrerProfile {
   bio            String?
   linkedinUrl    String?
   maxReferrals   Int      @default(3)
+
+  // ATS Integrations (Phase 2)
+  atsProvider    String?  // e.g., "GREENHOUSE", "LEVER"
+  atsApiKey      String?
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -120,6 +125,18 @@ model ReferralPosting {
   updatedAt   DateTime @updatedAt
 
   referrer    ReferrerProfile @relation("ReferrerPostings", fields: [referrerId], references: [id], onDelete: Cascade)
+}
+
+// Synced Job Postings (Phase 2)
+model JobPosting {
+  id          String   @id @default(cuid())
+  companyName String
+  title       String
+  description String?  @db.Text
+  url         String
+  location    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
 }
 
 model Message {
