@@ -40,10 +40,10 @@ export function AdminClient({ initialUsers }: { initialUsers: User[] }) {
       <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid var(--glass-border)" }}>
-            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Name</th>
-            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Role</th>
-            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Joined</th>
-            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem" }}>Status</th>
+            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Name</th>
+            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Role</th>
+            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Joined</th>
+            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Status</th>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "right" }}>Actions</th>
           </tr>
         </thead>
