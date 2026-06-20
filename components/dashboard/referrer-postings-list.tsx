@@ -41,11 +41,11 @@ export function ReferrerPostingsList({ postings, defaultCompany }: { postings: R
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-        <div>
-          <h2 style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-text-primary)" }}>
-            Roles I'm Referring For 📋
-          </h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
+        <div style={{ flex: 1, paddingRight: "1rem" }}>
+          <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-text-primary)" }}>
+            Manage Roles 📋
+          </h1>
           <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "0.25rem" }}>
             Add specific roles you are willing to refer candidates for. Seekers can apply directly to these.
           </p>
@@ -53,7 +53,7 @@ export function ReferrerPostingsList({ postings, defaultCompany }: { postings: R
         <button
           onClick={() => setShowModal(true)}
           className="btn-primary"
-          style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}
+          style={{ padding: "0.5rem 1rem", fontSize: "0.875rem", width: "auto", flexShrink: 0 }}
         >
           + Add Role
         </button>
