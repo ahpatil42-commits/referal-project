@@ -67,11 +67,17 @@ ${text.substring(0, 8000)}
       throw new Error("Failed to generate content from Gemini");
     }
 
-    const parsedData = JSON.parse(response.text);
+    let jsonText = response.text.trim();
+    if (jsonText.startsWith("```json")) {
+      jsonText = jsonText.replace(/^```json\s*/, "").replace(/\s*```$/, "");
+    } else if (jsonText.startsWith("```")) {
+      jsonText = jsonText.replace(/^```\s*/, "").replace(/\s*```$/, "");
+    }
+    const parsedData = JSON.parse(jsonText);
 
     return NextResponse.json(parsedData);
   } catch (error) {
     console.error("JD parse error:", error);
-    return NextResponse.json({ error: "Failed to parse JD" }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to parse JD" }, { status: 500 });
   }
 }
