@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { ReferrerProfileForm } from "@/components/dashboard/referrer-profile-form";
+import { ReferrerPostingsList } from "@/components/dashboard/referrer-postings-list";
 
 export const metadata = { title: "My Profile | ReferralAI" };
 
@@ -11,7 +12,11 @@ export default async function ReferrerProfilePage() {
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    include: { referrerProfile: true }
+    include: { 
+      referrerProfile: {
+        include: { referralPostings: { orderBy: { createdAt: "desc" } } }
+      } 
+    }
   });
   const profile = user?.referrerProfile;
 
@@ -40,6 +45,11 @@ export default async function ReferrerProfilePage() {
           }}
         />
       </div>
+
+      <ReferrerPostingsList 
+        postings={profile?.referralPostings || []} 
+        defaultCompany={profile?.company || ""}
+      />
     </div>
   );
 }

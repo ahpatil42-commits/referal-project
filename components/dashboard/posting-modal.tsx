@@ -4,46 +4,34 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { sendReferralRequest } from "@/actions/seeker";
+import { createReferralPosting } from "@/actions/posting";
 import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
 
 const schema = z.object({
-  jobTitle:  z.string().min(2, "Job title is required"),
-  company:   z.string().min(2, "Company is required"),
-  jobUrl:    z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  coverNote: z.string().min(30, "Write at least 30 characters").max(1000),
+  jobTitle: z.string().min(2, "Job title is required"),
+  company: z.string().min(2, "Company is required"),
+  jobUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  description: z.string().max(2000).optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-interface RequestModalProps {
-  referrerId: string;
-  referrerName: string;
-  referrerCompany: string;
-  onClose: () => void;
-}
-
-export function RequestModal({
-  referrerId,
-  referrerName,
-  referrerCompany,
-  onClose,
-}: RequestModalProps) {
+export function PostingModal({ onClose, defaultCompany }: { onClose: () => void, defaultCompany?: string }) {
   const [isPending, startTransition] = useTransition();
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { company: referrerCompany },
+    defaultValues: { company: defaultCompany || "" },
   });
 
   const onSubmit = (data: FormValues) => {
     startTransition(async () => {
-      const res = await sendReferralRequest({ referrerId, ...data });
-      if (res.error)   toast.error(res.error);
+      const res = await createReferralPosting(data);
+      if (res.error) toast.error(res.error);
       if (res.success) {
         toast.success(res.success);
-        setTimeout(onClose, 1500);
+        setTimeout(onClose, 1000);
       }
     });
   };
@@ -60,7 +48,7 @@ export function RequestModal({
       const res = await fetch("/api/jd/parse", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: jdText, type: "REQUEST" }),
+        body: JSON.stringify({ text: jdText, type: "POSTING" }),
       });
       
       const data = await res.json();
@@ -68,7 +56,7 @@ export function RequestModal({
 
       if (data.jobTitle) setValue("jobTitle", data.jobTitle, { shouldValidate: true });
       if (data.company) setValue("company", data.company, { shouldValidate: true });
-      if (data.coverNote) setValue("coverNote", data.coverNote, { shouldValidate: true });
+      if (data.description) setValue("description", data.description, { shouldValidate: true });
       
       toast.success("Autofilled from Job Description!");
       setShowJdInput(false);
@@ -81,7 +69,6 @@ export function RequestModal({
   };
 
   return (
-    /* Backdrop */
     <div
       onClick={onClose}
       style={{
@@ -96,20 +83,18 @@ export function RequestModal({
         padding: "1.5rem",
       }}
     >
-      {/* Modal */}
       <div
         className="glass-panel animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
-        style={{ width: "100%", maxWidth: "520px", padding: "2rem", zIndex: 101 }}
+        style={{ width: "100%", maxWidth: "520px", padding: "2rem", zIndex: 101, maxHeight: "90vh", overflowY: "auto" }}
       >
-        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
           <div>
             <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-text-primary)" }}>
-              Request a Referral
+              Add a Referral Role
             </h2>
             <p style={{ fontSize: "0.875rem", color: "var(--color-text-muted)", marginTop: "0.25rem" }}>
-              to <strong style={{ color: "var(--color-primary-light)" }}>{referrerName}</strong>
+              Post a role you are willing to refer candidates for.
             </p>
           </div>
           <button
@@ -202,35 +187,35 @@ export function RequestModal({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <div>
               <label className="form-label">Job Title</label>
-              <input className={`form-input ${errors.jobTitle ? "error" : ""}`} placeholder="Software Engineer" {...register("jobTitle")} />
+              <input className={`form-input ${errors.jobTitle ? "error" : ""}`} placeholder="Frontend Engineer" {...register("jobTitle")} />
               {errors.jobTitle && <p className="form-error">✕ {errors.jobTitle.message}</p>}
             </div>
             <div>
               <label className="form-label">Company</label>
-              <input className={`form-input ${errors.company ? "error" : ""}`} placeholder="Google" {...register("company")} />
+              <input className={`form-input ${errors.company ? "error" : ""}`} placeholder="Company Name" {...register("company")} />
               {errors.company && <p className="form-error">✕ {errors.company.message}</p>}
             </div>
           </div>
 
           <div>
             <label className="form-label">Job Posting URL <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
-            <input className={`form-input ${errors.jobUrl ? "error" : ""}`} placeholder="https://careers.google.com/..." {...register("jobUrl")} />
+            <input className={`form-input ${errors.jobUrl ? "error" : ""}`} placeholder="https://careers.company.com/..." {...register("jobUrl")} />
             {errors.jobUrl && <p className="form-error">✕ {errors.jobUrl.message}</p>}
           </div>
 
           <div>
-            <label className="form-label">Cover Note</label>
+            <label className="form-label">Summary / Notes <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
             <textarea
-              className={`form-input ${errors.coverNote ? "error" : ""}`}
-              rows={4}
-              placeholder="Introduce yourself and explain why you're a great fit for this role..."
-              style={{ resize: "vertical", minHeight: "100px" }}
-              {...register("coverNote")}
+              className={`form-input ${errors.description ? "error" : ""}`}
+              rows={3}
+              placeholder="Looking for 3+ years experience with React..."
+              style={{ resize: "vertical" }}
+              {...register("description")}
             />
-            {errors.coverNote && <p className="form-error">✕ {errors.coverNote.message}</p>}
+            {errors.description && <p className="form-error">✕ {errors.description.message}</p>}
           </div>
 
-          <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.25rem" }}>
+          <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}>
             <button
               type="button"
               onClick={onClose}
@@ -254,7 +239,7 @@ export function RequestModal({
               className="btn-primary"
               style={{ flex: 2 }}
             >
-              {isPending ? <><span className="btn-spinner" />Sending...</> : "Send Request 🚀"}
+              {isPending ? <><span className="btn-spinner" />Saving...</> : "Post Role 🚀"}
             </button>
           </div>
         </form>

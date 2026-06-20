@@ -42,6 +42,10 @@ export default async function BrowseReferrersPage(props: Props) {
           createdAt: { gte: startOfMonth },
         },
         select: { id: true }, // We only need the count
+      },
+      referralPostings: {
+        where: { isActive: true },
+        select: { id: true, jobTitle: true, jobUrl: true }
       }
     },
     orderBy: { createdAt: "desc" },

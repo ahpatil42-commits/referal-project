@@ -15,6 +15,7 @@ interface ReferrerCardProps {
     maxReferrals: number;
     linkedinUrl: string | null;
     user: { email: string; name: string | null };
+    referralPostings?: { id: string; jobTitle: string; jobUrl: string | null }[];
   };
   matchScore?: number;
 }
@@ -153,6 +154,37 @@ export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
             Up to {referrer.maxReferrals} referrals
           </span>
         </div>
+
+        {/* Roles Hiring For */}
+        {referrer.referralPostings && referrer.referralPostings.length > 0 && (
+          <div style={{ marginTop: "0.25rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Currently Referring For:</p>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              {referrer.referralPostings.map(posting => (
+                <a
+                  key={posting.id}
+                  href={posting.jobUrl || "#"}
+                  target={posting.jobUrl ? "_blank" : undefined}
+                  rel={posting.jobUrl ? "noopener noreferrer" : undefined}
+                  style={{
+                    fontSize: "0.8rem",
+                    padding: "0.3rem 0.75rem",
+                    borderRadius: "6px",
+                    background: "rgba(167, 139, 250, 0.15)",
+                    border: "1px solid rgba(167, 139, 250, 0.3)",
+                    color: "var(--color-purple)",
+                    textDecoration: "none",
+                    display: "inline-block",
+                    fontWeight: 500,
+                  }}
+                  title={posting.jobUrl ? "View Job Description" : ""}
+                >
+                  {posting.jobTitle} {posting.jobUrl && "↗"}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* AI Explanation Area */}
         {(matchScore !== undefined && matchScore >= 0) && (

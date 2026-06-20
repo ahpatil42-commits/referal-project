@@ -76,6 +76,7 @@ model ReferrerProfile {
   updatedAt      DateTime @updatedAt
 
   receivedRequests ReferralRequest[] @relation("ReferrerRequests")
+  referralPostings ReferralPosting[] @relation("ReferrerPostings")
 }
 
 // Core product model: a seeker requesting a referral from a referrer
@@ -95,6 +96,20 @@ model ReferralRequest {
   seeker   SeekerProfile   @relation("SeekerRequests",   fields: [seekerId],   references: [id], onDelete: Cascade)
   referrer ReferrerProfile @relation("ReferrerRequests", fields: [referrerId], references: [id], onDelete: Cascade)
   messages Message[]
+}
+
+model ReferralPosting {
+  id          String   @id @default(cuid())
+  referrerId  String
+  jobTitle    String
+  company     String
+  jobUrl      String?
+  description String?  // Optional JD summary
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  referrer    ReferrerProfile @relation("ReferrerPostings", fields: [referrerId], references: [id], onDelete: Cascade)
 }
 
 model Message {
