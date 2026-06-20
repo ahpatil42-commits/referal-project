@@ -30,14 +30,14 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Save file locally for production readiness
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    // Save file temporarily in /tmp (Vercel allows writing here)
+    const uploadsDir = path.join("/tmp", "uploads");
     await mkdir(uploadsDir, { recursive: true });
     
     const fileName = `${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
     const filePath = path.join(uploadsDir, fileName);
     await writeFile(filePath, buffer);
-    const resumeStoragePath = `/uploads/${fileName}`;
+    const resumeStoragePath = filePath;
 
     // Parse Content based on extension
     let text = "";
