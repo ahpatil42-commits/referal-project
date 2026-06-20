@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ReferrerRequestsLoading() {
   return (
-    <div style={{ maxWidth: "1200px" }}>
+    <div style={{ maxWidth: "1100px" }}>
       {/* Header */}
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-text-primary)" }}>

@@ -27,7 +27,7 @@ export default async function SeekerRequestsPage() {
   const requests = seekerProfile?.sentRequests ?? [];
 
   return (
-    <div style={{ maxWidth: "900px" }}>
+    <div style={{ maxWidth: "1100px" }}>
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-text-primary)" }}>
           My Requests 📬

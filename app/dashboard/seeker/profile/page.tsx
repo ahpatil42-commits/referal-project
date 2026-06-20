@@ -16,7 +16,7 @@ export default async function SeekerProfilePage() {
   const profile = user?.seekerProfile;
 
   return (
-    <div style={{ maxWidth: "680px" }}>
+    <div style={{ maxWidth: "1100px" }}>
       <div style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-text-primary)" }}>
           My Profile 👤
@@ -26,7 +26,7 @@ export default async function SeekerProfilePage() {
         </p>
       </div>
 
-      <div className="glass-panel" style={{ padding: "2rem" }}>
+      <div className="glass-panel" style={{ padding: "2rem", maxWidth: "680px" }}>
         <SeekerProfileForm
           initialData={{
             headline:    profile?.headline    ?? "",
