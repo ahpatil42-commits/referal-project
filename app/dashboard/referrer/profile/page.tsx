@@ -20,7 +20,7 @@ export default async function ReferrerProfilePage() {
   const profile = user?.referrerProfile;
 
   return (
-    <div style={{ maxWidth: "680px" }}>
+    <div style={{ maxWidth: "900px" }}>
 
       <ReferrerPostingsList 
         postings={profile?.referralPostings || []} 
