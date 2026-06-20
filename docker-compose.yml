@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: referralai-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Auth
+      - AUTH_SECRET=generate_a_strong_secret_key_here
+      # AI
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=llama3
+      # Note: Provide your actual keys below when deploying
+      - AUTH_GOOGLE_ID=
+      - AUTH_GOOGLE_SECRET=
+      - PUSHER_APP_ID=
+      - NEXT_PUBLIC_PUSHER_KEY=
+      - PUSHER_SECRET=
+      - RESEND_API_KEY=
+    volumes:
+      - ./dev.db:/app/dev.db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
