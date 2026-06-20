@@ -28,6 +28,13 @@ model User {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
+  // Stripe Monetization
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  plan                 String    @default("FREE")
+  credits              Int       @default(1)
+
+
   // NextAuth relations
   accounts      Account[]
   sessions      Session[]
