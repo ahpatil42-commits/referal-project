@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { switchUserRole } from "@/actions/user";
+import { toast } from "sonner";
 
 interface NavItem {
   href: string;
@@ -46,15 +47,34 @@ export function Sidebar({ role, email, image }: SidebarProps) {
   const handleRoleSwitch = async () => {
     setIsSwitching(true);
     const newRole = isReferrer ? "SEEKER" : "REFERRER";
+    const toastId = toast.loading(`Switching to ${newRole === "SEEKER" ? "Seeker" : "Referrer"} mode...`);
     
-    // Update DB
-    await switchUserRole(newRole);
-    // Update NextAuth Session Token
-    await update({ role: newRole });
-    
-    // Redirect
-    router.push(`/dashboard/${newRole.toLowerCase()}`);
-    setIsSwitching(false);
+    try {
+      // Update DB
+      const result = await switchUserRole(newRole);
+      
+      if (result.error) {
+        toast.error(result.error, { id: toastId });
+        setIsSwitching(false);
+        return;
+      }
+
+      // Update NextAuth Session Token
+      await update({ role: newRole });
+      
+      toast.success(`Switched to ${newRole === "SEEKER" ? "Seeker" : "Referrer"} mode`, { id: toastId });
+      
+      // Redirect using the smart URL from the server action
+      if (result.redirectUrl) {
+        router.push(result.redirectUrl);
+      } else {
+        router.push(`/dashboard/${newRole.toLowerCase()}`);
+      }
+    } catch (error) {
+      toast.error("Failed to switch modes.", { id: toastId });
+    } finally {
+      setIsSwitching(false);
+    }
   };
 
   return (

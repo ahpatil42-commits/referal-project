@@ -17,43 +17,11 @@ const RegisterSchema = z
       .min(8, { message: "Password must be at least 8 characters" })
       .regex(/[A-Z]/, { message: "Password must contain at least 1 uppercase letter" })
       .regex(/[0-9]/, { message: "Password must contain at least 1 number" }),
-    role: z.enum(["SEEKER", "REFERRER"]),
-    corporateEmail: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.role === "REFERRER") {
-      if (!data.corporateEmail || data.corporateEmail.trim() === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Corporate email is required",
-          path: ["corporateEmail"],
-        });
-      } else if (!z.string().email().safeParse(data.corporateEmail).success) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Please enter a valid corporate email",
-          path: ["corporateEmail"],
-        });
-      }
-    }
   });
 
 type RegisterFormValues = z.infer<typeof RegisterSchema>;
 
-const ROLES = [
-  {
-    value: "SEEKER" as const,
-    icon: "🚀",
-    title: "Job Seeker",
-    subtitle: "I'm looking for referrals to land my next role",
-  },
-  {
-    value: "REFERRER" as const,
-    icon: "🤝",
-    title: "Referrer",
-    subtitle: "I want to refer talented candidates to my company",
-  },
-];
+
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -63,26 +31,20 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
-      role: "SEEKER",
       email: "",
       password: "",
-      corporateEmail: "",
     },
   });
-
-  const selectedRole = watch("role");
 
   const onSubmit = async (data: RegisterFormValues) => {
     setServerError(null);
     setServerSuccess(null);
 
-    const response = await registerUser(data);
+    const response = await registerUser({ ...data, role: "SEEKER" });
 
     if (response.error) {
       setServerError(response.error);
@@ -195,28 +157,7 @@ export default function RegisterPage() {
           noValidate
           style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
         >
-          {/* Role Selector */}
-          <div>
-            <label className="form-label" style={{ marginBottom: "0.625rem" }}>
-              I am a...
-            </label>
-            <div className="role-toggle">
-              {ROLES.map((role) => (
-                <button
-                  key={role.value}
-                  type="button"
-                  id={`role-${role.value.toLowerCase()}`}
-                  className={`role-toggle-btn ${selectedRole === role.value ? "active" : ""}`}
-                  onClick={() => setValue("role", role.value, { shouldValidate: true })}
-                  aria-pressed={selectedRole === role.value}
-                >
-                  <span className="role-icon">{role.icon}</span>
-                  <span className="role-title">{role.title}</span>
-                  <span className="role-subtitle">{role.subtitle}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+
 
           {/* Personal Email */}
           <div>
@@ -238,48 +179,7 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* Corporate Email — animates in for REFERRER */}
-          {selectedRole === "REFERRER" && (
-            <div className="animate-slide-down">
-              <label htmlFor="register-corporate-email" className="form-label">
-                Corporate Email
-                <span
-                  style={{
-                    marginLeft: "0.375rem",
-                    fontSize: "0.75rem",
-                    color: "var(--color-primary-light)",
-                    background: "rgba(99,102,241,0.12)",
-                    padding: "0.15rem 0.4rem",
-                    borderRadius: "4px",
-                  }}
-                >
-                  Required for Referrers
-                </span>
-              </label>
-              <input
-                id="register-corporate-email"
-                type="email"
-                autoComplete="work email"
-                className={`form-input ${errors.corporateEmail ? "error" : ""}`}
-                placeholder="you@yourcompany.com"
-                {...register("corporateEmail")}
-              />
-              {errors.corporateEmail && (
-                <p className="form-error">
-                  <span>✕</span> {errors.corporateEmail.message}
-                </p>
-              )}
-              <p
-                style={{
-                  fontSize: "0.775rem",
-                  color: "var(--color-text-muted)",
-                  marginTop: "0.375rem",
-                }}
-              >
-                Used to verify your employment for referral credibility.
-              </p>
-            </div>
-          )}
+
 
           {/* Password */}
           <div>
@@ -309,14 +209,7 @@ export default function RegisterPage() {
             disabled={isSubmitting || !!serverSuccess}
             style={{ marginTop: "0.25rem" }}
           >
-            {isSubmitting ? (
-              <>
-                <span className="btn-spinner" />
-                Creating Account...
-              </>
-            ) : (
-              `Create ${selectedRole === "SEEKER" ? "Seeker" : "Referrer"} Account`
-            )}
+              "Create Account"
           </button>
         </form>
 
