@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 
 import { db } from "@/lib/db";
@@ -8,7 +8,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await auth();
 
   if (!session?.user?.id) {
-    notFound();
+    redirect("/login?callbackUrl=/portal-admin");
   }
 
   const user = await db.user.findUnique({
