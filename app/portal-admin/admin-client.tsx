@@ -12,6 +12,9 @@ type User = {
   isSuspended: boolean;
   isAdmin: boolean;
   createdAt: Date;
+  lastLoginAt: Date | null;
+  seekerProfile?: { _count: { sentRequests: number } } | null;
+  referrerProfile?: { _count: { receivedRequests: number } } | null;
 };
 
 export function AdminClient({ initialUsers }: { initialUsers: User[] }) {
@@ -43,6 +46,8 @@ export function AdminClient({ initialUsers }: { initialUsers: User[] }) {
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Name</th>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Role</th>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Joined</th>
+            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Last Login</th>
+            <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Activity</th>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "left" }}>Status</th>
             <th style={{ padding: "1rem", color: "var(--color-text-muted)", fontWeight: 600, fontSize: "0.875rem", textAlign: "right" }}>Actions</th>
           </tr>
@@ -66,6 +71,15 @@ export function AdminClient({ initialUsers }: { initialUsers: User[] }) {
               </td>
               <td style={{ padding: "1rem", color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
                 {new Date(u.createdAt).toLocaleDateString()}
+              </td>
+              <td style={{ padding: "1rem", color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
+                {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : "Never"}
+              </td>
+              <td style={{ padding: "1rem", color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
+                {u.role === "SEEKER" 
+                  ? `${u.seekerProfile?._count.sentRequests || 0} reqs sent`
+                  : `${u.referrerProfile?._count.receivedRequests || 0} reqs received`
+                }
               </td>
               <td style={{ padding: "1rem" }}>
                 {u.isSuspended ? (

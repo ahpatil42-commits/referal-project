@@ -65,6 +65,21 @@ export async function getRecentUsers() {
       isAdmin: true,
       isSuspended: true,
       createdAt: true,
+      lastLoginAt: true,
+      seekerProfile: {
+        select: {
+          _count: {
+            select: { sentRequests: true }
+          }
+        }
+      },
+      referrerProfile: {
+        select: {
+          _count: {
+            select: { receivedRequests: true }
+          }
+        }
+      }
     },
   });
 }

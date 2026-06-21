@@ -16,6 +16,16 @@ export const authConfig: NextAuthConfig = {
   pages: {
     signIn: "/login",
   },
+  events: {
+    async signIn({ user }) {
+      if (user?.id) {
+        await db.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        }).catch(console.error);
+      }
+    }
+  },
   providers: [
     Credentials({
       name: "Credentials",
