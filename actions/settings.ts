@@ -100,3 +100,19 @@ export async function verifyOtp(type: "email" | "mobile", otp: string) {
     return { error: "Verification failed." };
   }
 }
+
+export async function updateProfileImage(url: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not authenticated" };
+
+  try {
+    await db.user.update({
+      where: { id: session.user.id },
+      data: { image: url }
+    });
+    revalidatePath("/dashboard");
+    return { success: "Profile photo updated!" };
+  } catch (error) {
+    return { error: "Failed to update profile photo." };
+  }
+}

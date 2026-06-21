@@ -5,8 +5,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { updateSeekerProfile } from "@/actions/seeker";
+import { updateProfileImage } from "@/actions/settings";
 import { toast } from "sonner";
 import { ResumeRoaster } from "./resume-roaster";
+import { UploadButton, UploadDropzone } from "@/utils/uploadthing";
 
 const schema = z.object({
   headline:    z.string().max(120).optional(),
@@ -52,24 +54,13 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
   });
   const { setValue } = useFormReturn;
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"].includes(file.type) && !file.name.match(/\.(pdf|docx|txt)$/i)) {
-      toast.error("Please upload a PDF, DOCX, or TXT file.");
-      return;
-    }
-    
+  const handleResumeUploadComplete = async (url: string) => {
     setIsUploading(true);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
       const res = await fetch("/api/resume/parse", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
       });
       const data = await res.json();
 
@@ -85,37 +76,28 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
       if (data.linkedinUrl) setValue("linkedinUrl", data.linkedinUrl, { shouldValidate: true });
       if (data.githubUrl) setValue("githubUrl", data.githubUrl, { shouldValidate: true });
       if (data.resumeStoragePath) setValue("resumeStoragePath", data.resumeStoragePath);
+      setValue("resumeUrl", url, { shouldValidate: true });
 
       toast.success("Resume parsed! Review the auto-filled data below.");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
       setIsUploading(false);
-      // Reset input so they can re-upload same file if they want
-      e.target.value = "";
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleImageUploadComplete = async (url: string) => {
     setIsImageUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const res = await fetch("/api/upload/image", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const res = await updateProfileImage(url);
+      if (res.error) throw new Error(res.error);
       
-      setPreviewImage(data.imageUrl);
+      setPreviewImage(url);
       toast.success("Profile photo updated! Refresh to see it in the sidebar.");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
       setIsImageUploading(false);
-      e.target.value = "";
     }
   };
 
@@ -152,10 +134,17 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
         </div>
         <div>
           <h4 style={{ margin: "0 0 0.5rem", color: "var(--color-text-primary)" }}>Profile Photo</h4>
-          <label className="btn-secondary" style={{ cursor: isImageUploading ? "not-allowed" : "pointer", opacity: isImageUploading ? 0.7 : 1 }}>
-            {isImageUploading ? "Uploading..." : "Upload Photo"}
-            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={isImageUploading} style={{ display: "none" }} />
-          </label>
+          <div style={{ pointerEvents: isImageUploading ? "none" : "auto", opacity: isImageUploading ? 0.7 : 1 }}>
+            <UploadButton
+              endpoint="imageUploader"
+              onClientUploadComplete={(res) => {
+                if (res?.[0]) handleImageUploadComplete(res[0].url);
+              }}
+              onUploadError={(error: Error) => {
+                toast.error(`Upload failed: ${error.message}`);
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -185,29 +174,17 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
               Upload your PDF, DOCX, or TXT resume to instantly extract your skills and generate a bio.
             </p>
           </div>
-          <label
-            style={{
-              cursor: isUploading ? "not-allowed" : "pointer",
-              background: "rgba(255,255,255,0.1)",
-              padding: "0.5rem 1rem",
-              borderRadius: "6px",
-              fontSize: "0.85rem",
-              fontWeight: 500,
-              marginTop: "0.5rem",
-              opacity: isUploading ? 0.7 : 1,
-              transition: "all 0.2s",
-            }}
-            className="hover:bg-white/20"
-          >
-            {isUploading ? "Extracting Data..." : "Choose File"}
-            <input
-              type="file"
-              accept=".pdf,.docx,.txt"
-              onChange={handleFileUpload}
-              disabled={isUploading}
-              style={{ display: "none" }}
+          <div style={{ pointerEvents: isUploading ? "none" : "auto", opacity: isUploading ? 0.7 : 1, width: "100%", marginTop: "1rem" }}>
+            <UploadDropzone
+              endpoint="resumeUploader"
+              onClientUploadComplete={(res) => {
+                if (res?.[0]) handleResumeUploadComplete(res[0].url);
+              }}
+              onUploadError={(error: Error) => {
+                toast.error(`Upload failed: ${error.message}`);
+              }}
             />
-          </label>
+          </div>
         </div>
         
         <ResumeRoaster />

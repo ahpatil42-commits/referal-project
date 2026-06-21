@@ -5,7 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { updateReferrerProfile } from "@/actions/referrer";
+import { updateProfileImage } from "@/actions/settings";
 import { toast } from "sonner";
+import { UploadButton } from "@/utils/uploadthing";
 
 const schema = z.object({
   company:        z.string().max(100).optional(),
@@ -49,26 +51,18 @@ export function ReferrerProfileForm({ initialData }: ReferrerProfileFormProps) {
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleImageUploadComplete = async (url: string) => {
     setIsImageUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const res = await fetch("/api/upload/image", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed");
+      const res = await updateProfileImage(url);
+      if (res.error) throw new Error(res.error);
       
-      setPreviewImage(data.imageUrl);
+      setPreviewImage(url);
       toast.success("Profile photo updated! Refresh to see it in the sidebar.");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
       setIsImageUploading(false);
-      e.target.value = "";
     }
   };
 
@@ -89,10 +83,17 @@ export function ReferrerProfileForm({ initialData }: ReferrerProfileFormProps) {
         </div>
         <div>
           <h4 style={{ margin: "0 0 0.5rem", color: "var(--color-text-primary)" }}>Profile Photo</h4>
-          <label className="btn-secondary" style={{ cursor: isImageUploading ? "not-allowed" : "pointer", opacity: isImageUploading ? 0.7 : 1 }}>
-            {isImageUploading ? "Uploading..." : "Upload Photo"}
-            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={isImageUploading} style={{ display: "none" }} />
-          </label>
+          <div style={{ pointerEvents: isImageUploading ? "none" : "auto", opacity: isImageUploading ? 0.7 : 1 }}>
+            <UploadButton
+              endpoint="imageUploader"
+              onClientUploadComplete={(res) => {
+                if (res?.[0]) handleImageUploadComplete(res[0].url);
+              }}
+              onUploadError={(error: Error) => {
+                toast.error(`Upload failed: ${error.message}`);
+              }}
+            />
+          </div>
         </div>
       </div>
 

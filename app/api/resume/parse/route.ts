@@ -4,9 +4,7 @@ import { auth } from "@/auth";
 // Use require for pdf-parse as it doesn't have a default export
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
-import { writeFile, mkdir } from "fs/promises";
 import path from "path";
-import crypto from "crypto";
 import { apiRateLimiter } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
@@ -21,29 +19,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
     }
 
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    const body = await request.json();
+    const fileUrl = body.url;
+    if (!fileUrl) {
+      return NextResponse.json({ error: "No file URL provided" }, { status: 400 });
     }
 
-    // Convert file to Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    // Save file temporarily in /tmp (Vercel allows writing here)
-    const uploadsDir = path.join("/tmp", "uploads");
-    await mkdir(uploadsDir, { recursive: true });
+    // Fetch the file from the Uploadthing URL
+    const fileResponse = await fetch(fileUrl);
+    if (!fileResponse.ok) {
+      throw new Error("Failed to download file from cloud storage");
+    }
     
-    const fileName = `${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-    const filePath = path.join(uploadsDir, fileName);
-    await writeFile(filePath, buffer);
-    const resumeStoragePath = filePath;
+    const arrayBuffer = await fileResponse.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Ext is .pdf, .docx etc. We can get it from the URL
+    const urlParts = fileUrl.split("/");
+    const filename = urlParts[urlParts.length - 1] || "resume.pdf";
+    const ext = path.extname(filename).toLowerCase();
 
     // Parse Content based on extension
     let text = "";
-    const ext = path.extname(file.name).toLowerCase();
-    
     if (ext === ".pdf") {
       const data = await pdfParse(buffer);
       text = data.text;
@@ -65,7 +62,8 @@ export async function POST(request: Request) {
         bio: "Experienced professional looking for new opportunities.",
         skills: JSON.stringify(["React", "Node.js", "TypeScript"]),
         targetRoles: JSON.stringify(["Software Engineer"]),
-        resumeStoragePath
+        resumeUrl: fileUrl,
+        resumeStoragePath: fileUrl
       });
     }
 
@@ -111,7 +109,8 @@ ${text.substring(0, 15000)}
       targetRoles: JSON.stringify(parsedData.targetRoles || []),
       linkedinUrl: parsedData.linkedinUrl || "",
       githubUrl: parsedData.githubUrl || "",
-      resumeStoragePath
+      resumeUrl: fileUrl,
+      resumeStoragePath: fileUrl
     });
   } catch (error) {
     console.error("Resume parse error:", error);
