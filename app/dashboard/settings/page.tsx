@@ -1,11 +1,25 @@
 import { GDPRActions } from "@/components/dashboard/gdpr-actions";
+import { AccountVerificationSettings } from "@/components/dashboard/account-verification-settings";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Settings | ReferralAI",
   description: "Manage your account settings",
 };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { email: true, emailVerified: true, mobile: true, mobileVerified: true }
+  });
+
+  if (!user) redirect("/login");
+
   return (
     <div className="animate-fade-in-up" style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
@@ -18,6 +32,13 @@ export default function SettingsPage() {
           </p>
         </div>
       </div>
+
+      <AccountVerificationSettings 
+        email={user.email}
+        emailVerified={!!user.emailVerified}
+        mobile={user.mobile}
+        mobileVerified={!!user.mobileVerified}
+      />
 
       <GDPRActions />
     </div>
