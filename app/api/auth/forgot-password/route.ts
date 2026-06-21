@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import crypto from "crypto";
+import { sendPasswordResetEmail } from "@/lib/mail";
 
 export async function POST(req: Request) {
   try {
@@ -30,11 +31,8 @@ export async function POST(req: Request) {
 
     // In a production app, use Resend/Nodemailer to send the email.
     // Since we don't have a configured SMTP/RESEND_API_KEY in the environment,
-    // we log the reset link to the console for development testing.
-    console.log(`\n\n================================`);
-    console.log(`🔐 PASSWORD RESET LINK (DEV MODE)`);
-    console.log(`http://localhost:3000/reset-password?token=${token}&email=${encodeURIComponent(email)}`);
-    console.log(`================================\n\n`);
+    // Send Reset Email
+    await sendPasswordResetEmail(email, token);
 
     return NextResponse.json({ success: true });
   } catch (error) {

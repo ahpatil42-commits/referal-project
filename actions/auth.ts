@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import crypto from "crypto";
+import { sendVerificationEmail } from "@/lib/mail";
 
 const registerRateLimit = new Map<string, { count: number; timestamp: number }>();
 
@@ -87,13 +88,8 @@ export async function registerUser(data: {
       }
     });
 
-    // Normally you'd send an email here using Resend or similar.
-    // For local development, we print the verification URL to the console:
-    console.log("\n=============================================");
-    console.log("   📧 EMAIL VERIFICATION LINK GENERATED   ");
-    console.log("=============================================");
-    console.log(`Click to verify: http://localhost:3000/verify-email?token=${token}`);
-    console.log("=============================================\n");
+    // Send Verification Email
+    await sendVerificationEmail(data.email, token);
 
     return { success: "Account created successfully" };
   } catch (error) {
