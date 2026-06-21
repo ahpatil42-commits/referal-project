@@ -47,7 +47,7 @@ export async function POST(req: Request) {
         first_name: request.seeker.user.name?.split(' ')[0] || "Unknown",
         last_name: request.seeker.user.name?.split(' ').slice(1).join(' ') || "Unknown",
         emails: [{ email: request.seeker.user.email, type: "personal" }],
-        websites: [],
+        websites: [] as any[],
         applications: [
           {
             job_id: 12345, // In a real app, this would map to the specific Job ID the seeker applied for
