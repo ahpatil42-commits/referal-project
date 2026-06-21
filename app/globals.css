@@ -229,6 +229,11 @@ body.light-theme .form-input {
   color: var(--color-text-muted);
 }
 
+select.form-input option {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
 .form-input:focus {
   border-color: var(--color-primary);
   background: rgba(99, 102, 241, 0.06);

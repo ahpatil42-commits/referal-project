@@ -95,9 +95,9 @@ export function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
               onChange={(e) => setType(e.target.value as any)}
               className="form-input"
             >
-              <option value="GENERAL">General Feedback</option>
-              <option value="FEATURE_REQUEST">Feature Request</option>
-              <option value="BUG">Report a Bug</option>
+              <option value="GENERAL" style={{ background: "var(--color-bg-elevated)", color: "var(--color-text-primary)" }}>General Feedback</option>
+              <option value="FEATURE_REQUEST" style={{ background: "var(--color-bg-elevated)", color: "var(--color-text-primary)" }}>Feature Request</option>
+              <option value="BUG" style={{ background: "var(--color-bg-elevated)", color: "var(--color-text-primary)" }}>Report a Bug</option>
             </select>
           </div>
 
