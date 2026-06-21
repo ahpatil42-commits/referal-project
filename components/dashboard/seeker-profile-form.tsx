@@ -160,7 +160,7 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
     <form onSubmit={useFormReturn.handleSubmit(onSubmit)} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
       {/* AI Resume Upload Zone */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", alignItems: "start" }}>
         <div
           style={{
             border: "2px dashed rgba(99,102,241,0.3)",
