@@ -2,6 +2,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Breadcrumbs } from "@/components/dashboard/breadcrumbs";
 import { db } from "@/lib/db";
 
 export default async function DashboardLayout({
@@ -17,8 +19,12 @@ export default async function DashboardLayout({
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { image: true }
+    select: { image: true, emailVerified: true }
   });
+
+  if (!user?.emailVerified) {
+    redirect("/pending-verification");
+  }
 
   return (
     <div
@@ -64,8 +70,12 @@ export default async function DashboardLayout({
             position: "relative"
           }}
         >
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-            <NotificationBell />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+            <Breadcrumbs />
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <ThemeToggle />
+              <NotificationBell />
+            </div>
           </div>
           {children}
         </main>

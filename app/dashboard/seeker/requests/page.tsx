@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { ChatButton } from "@/components/dashboard/chat-button";
+import { ReviewButton } from "@/components/dashboard/review-button";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export const metadata = { title: "My Requests | ReferralAI" };
@@ -21,10 +22,14 @@ export default async function SeekerRequestsPage() {
           messages: { orderBy: { createdAt: "asc" } }
         },
       },
+      givenReviews: {
+        select: { referrerId: true }
+      }
     },
   });
 
   const requests = seekerProfile?.sentRequests ?? [];
+  const reviewedReferrerIds = new Set(seekerProfile?.givenReviews?.map(r => r.referrerId) || []);
 
   return (
     <div style={{ maxWidth: "1100px" }}>
@@ -106,6 +111,13 @@ export default async function SeekerRequestsPage() {
                         currentUserId={session.user.id}
                         messages={req.messages}
                         otherUserName={refName}
+                      />
+                    )}
+                    {req.status === "COMPLETED" && (
+                      <ReviewButton
+                        referrerId={req.referrerId}
+                        referrerName={refName}
+                        hasReviewed={reviewedReferrerIds.has(req.referrerId)}
                       />
                     )}
                   </div>

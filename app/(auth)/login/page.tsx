@@ -152,12 +152,18 @@ export default function LoginPage() {
 
           {/* Password */}
           <div>
-            <label htmlFor="login-password" className="form-label">
-              Password
-            </label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <label htmlFor="login-password" className="form-label" style={{ marginBottom: 0 }}>
+                Password
+              </label>
+              <Link href="/forgot-password" style={{ fontSize: "0.825rem", color: "var(--color-primary-light)", textDecoration: "none", fontWeight: 600 }}>
+                Forgot password?
+              </Link>
+            </div>
             <input
               id="login-password"
               type="password"
+              style={{ marginTop: "0.5rem" }}
               autoComplete="current-password"
               className={`form-input ${errors.password ? "error" : ""}`}
               placeholder="••••••••"

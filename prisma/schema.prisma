@@ -48,6 +48,10 @@ model User {
   
   // Notifications received by this user
   notifications   Notification[]
+
+  // Reports
+  reportsSubmitted Report[] @relation("ReportedBy")
+  reportsReceived  Report[] @relation("ReportedUser")
 }
 
 model SeekerProfile {
@@ -66,6 +70,7 @@ model SeekerProfile {
   updatedAt      DateTime @updatedAt
 
   sentRequests   ReferralRequest[] @relation("SeekerRequests")
+  givenReviews   Review[]          @relation("SeekerReviews")
 }
 
 model ReferrerProfile {
@@ -89,6 +94,7 @@ model ReferrerProfile {
 
   receivedRequests ReferralRequest[] @relation("ReferrerRequests")
   referralPostings ReferralPosting[] @relation("ReferrerPostings")
+  receivedReviews  Review[]          @relation("ReferrerReviews")
 }
 
 // Core product model: a seeker requesting a referral from a referrer
@@ -196,4 +202,31 @@ model Notification {
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reporterId  String
+  reportedId  String
+  reason      String
+  details     String?
+  status      String   @default("PENDING") // PENDING | REVIEWED | RESOLVED
+  createdAt   DateTime @default(now())
+
+  reporter    User     @relation("ReportedBy", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported    User     @relation("ReportedUser", fields: [reportedId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  seekerId    String
+  referrerId  String
+  rating      Int      // 1 to 5
+  comment     String?
+  createdAt   DateTime @default(now())
+
+  seeker      SeekerProfile   @relation("SeekerReviews", fields: [seekerId], references: [id], onDelete: Cascade)
+  referrer    ReferrerProfile @relation("ReferrerReviews", fields: [referrerId], references: [id], onDelete: Cascade)
+
+  @@unique([seekerId, referrerId]) // One review per seeker-referrer pair
 }

@@ -27,12 +27,13 @@ async function verifyAdmin() {
 export async function getPlatformStats() {
   await verifyAdmin();
 
-  const [totalUsers, totalSeekers, totalReferrers, totalRequests, acceptedRequests] = await Promise.all([
+  const [totalUsers, totalSeekers, totalReferrers, totalRequests, acceptedRequests, proUsers] = await Promise.all([
     db.user.count(),
     db.user.count({ where: { role: "SEEKER" } }),
     db.user.count({ where: { role: "REFERRER" } }),
     db.referralRequest.count(),
     db.referralRequest.count({ where: { status: "ACCEPTED" } }),
+    db.user.count({ where: { plan: "PRO" } })
   ]);
 
   const acceptanceRate = totalRequests > 0 
@@ -45,6 +46,8 @@ export async function getPlatformStats() {
     totalReferrers,
     totalRequests,
     acceptanceRate,
+    proUsers,
+    mrr: proUsers * 19,
   };
 }
 

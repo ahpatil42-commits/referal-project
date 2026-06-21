@@ -54,6 +54,15 @@ export function RequestModal({
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Keyboard Accessibility: Close on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const handleAutofill = async () => {
     if (!jdText.trim()) return toast.error("Please paste a Job Description first.");
     

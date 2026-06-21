@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { ReferrerCard } from "@/components/dashboard/referrer-card";
-import { SearchBar } from "./search-bar";
+import { BrowseFilters } from "./browse-filters";
 import { calculateMatchScore } from "@/actions/matching";
 import { EmptyState } from "@/components/ui/empty-state";
 
@@ -16,6 +16,7 @@ type Props = {
 export default async function BrowseReferrersPage(props: Props) {
   const searchParams = await props.searchParams;
   const q = typeof searchParams.q === "string" ? searchParams.q : undefined;
+  const minScoreParam = typeof searchParams.minScore === "string" ? parseInt(searchParams.minScore, 10) : 0;
 
   const session = await auth();
   if (!session?.user) redirect("/login");
@@ -58,12 +59,12 @@ export default async function BrowseReferrersPage(props: Props) {
     where: { userId: session.user.id },
   });
 
-  const referrersWithScores = await Promise.all(
+  const referrersWithScores = (await Promise.all(
     referrers.map(async (ref) => {
       const score = await calculateMatchScore(seekerProfile, ref);
       return { ...ref, matchScore: score };
     })
-  );
+  )).filter(ref => ref.matchScore >= minScoreParam);
 
   // Sort by match score descending
   referrersWithScores.sort((a, b) => b.matchScore - a.matchScore);
@@ -80,7 +81,7 @@ export default async function BrowseReferrersPage(props: Props) {
             {referrers.length} professional{referrers.length !== 1 ? "s" : ""} available to refer you
           </p>
         </div>
-        <SearchBar />
+        <BrowseFilters />
       </div>
 
       {/* Empty state */}

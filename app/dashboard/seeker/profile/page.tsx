@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { SeekerProfileForm } from "@/components/dashboard/seeker-profile-form";
+import { GDPRActions } from "@/components/dashboard/gdpr-actions";
 
 export const metadata = { title: "My Profile | ReferralAI" };
 
@@ -40,6 +41,7 @@ export default async function SeekerProfilePage() {
           }}
         />
       </div>
+      <GDPRActions />
     </div>
   );
 }

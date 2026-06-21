@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { apiRateLimiter } from "@/lib/rate-limit";
 
 export default auth((req) => {
   const { nextUrl } = req;
@@ -12,6 +13,23 @@ export default auth((req) => {
   const isAuthRoute =
     nextUrl.pathname === "/login" ||
     nextUrl.pathname === "/register";
+  const isApiRoute = nextUrl.pathname.startsWith("/api");
+
+  // Rate Limiting for API routes (excluding auth and webhooks)
+  if (isApiRoute && !nextUrl.pathname.startsWith("/api/auth") && !nextUrl.pathname.startsWith("/api/webhooks")) {
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const { success, limit, remaining } = apiRateLimiter.check(ip);
+    
+    if (!success) {
+      return new NextResponse("Too Many Requests", {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+        },
+      });
+    }
+  }
 
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && isLoggedIn) {
@@ -71,12 +89,11 @@ export const config = {
   matcher: [
     /*
      * Match all paths except:
-     * - api routes
      * - _next/static
      * - _next/image
      * - favicon.ico
      * - files with extensions (images, fonts, etc.)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };

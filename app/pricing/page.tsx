@@ -75,7 +75,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pro Plan */}
-        <div className="glass-panel dashboard-card" style={{ flex: "1", minWidth: "320px", maxWidth: "480px", padding: "3rem", borderTop: "4px solid var(--color-primary)", background: "linear-gradient(to bottom, rgba(99,102,241,0.08), transparent)", position: "relative", boxShadow: "0 20px 40px rgba(99,102,241,0.15)" }}>
+        <div className="glass-panel dashboard-card" style={{ flex: "1", minWidth: "320px", maxWidth: "480px", padding: "3rem", borderTop: "4px solid var(--color-primary)", background: "linear-gradient(to bottom, rgba(99,102,241,0.08), transparent)", position: "relative", boxShadow: "0 20px 40px rgba(99,102,241,0.15)", overflow: "visible" }}>
           <div style={{ position: "absolute", top: "-1rem", left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))", color: "white", padding: "0.4rem 1.25rem", borderRadius: "99px", fontSize: "0.75rem", fontWeight: 800, letterSpacing: "0.1em", boxShadow: "0 4px 12px rgba(99,102,241,0.4)", display: "flex", alignItems: "center", gap: "0.5rem", zIndex: 10 }}>
             <Sparkles size={14} /> MOST POPULAR
           </div>

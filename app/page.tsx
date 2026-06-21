@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { Sparkles, Users, Briefcase, CheckCircle2, ArrowRight, Zap, Target, MessageSquare } from "lucide-react";
+import { LandingNavbar } from "@/components/marketing/navbar";
 
 export default async function HomePage() {
   let totalSeekers = 0, totalReferrers = 0, totalRequests = 0;
@@ -35,6 +36,9 @@ export default async function HomePage() {
         }}
       />
 
+      {/* Top Navigation Menu */}
+      <LandingNavbar />
+
       {/* Hero Section */}
       <div className="z-content animate-fade-in-up" style={{ textAlign: "center", maxWidth: "900px", marginTop: "2rem" }}>
         <div 
@@ -56,7 +60,7 @@ export default async function HomePage() {
         
         <h1
           style={{
-            fontSize: "clamp(3.5rem, 8vw, 6rem)",
+            fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
             fontWeight: 900,
             lineHeight: 1.05,
             marginBottom: "1.5rem",
@@ -69,7 +73,7 @@ export default async function HomePage() {
         
         <p
           style={{
-            fontSize: "clamp(1.15rem, 2.5vw, 1.35rem)",
+            fontSize: "clamp(1rem, 2vw, 1.2rem)",
             color: "var(--color-text-secondary)",
             maxWidth: "650px",
             margin: "0 auto 3rem",

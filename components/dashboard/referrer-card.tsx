@@ -2,12 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { RequestModal } from "@/components/dashboard/request-modal";
+import { ReportUserModal } from "@/components/dashboard/report-modal";
 import { getMatchExplanation } from "@/actions/ai";
 import { toast } from "sonner";
 
 interface ReferrerCardProps {
   referrer: {
     id: string;
+    userId: string;
     company: string | null;
     jobTitle: string | null;
     bio: string | null;
@@ -22,6 +24,7 @@ interface ReferrerCardProps {
 
 export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
   const [showModal, setShowModal] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const [explanation, setExplanation] = useState<string | null>(null);
   const [isExplaining, startTransition] = useTransition();
 
@@ -76,9 +79,19 @@ export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
             {displayName[0].toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontWeight: 700, color: "var(--color-text-primary)", fontSize: "0.975rem" }}>
-              {displayName}
-            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <p style={{ fontWeight: 700, color: "var(--color-text-primary)", fontSize: "0.975rem" }}>
+                {displayName}
+              </p>
+              <button 
+                onClick={() => setShowReport(true)}
+                style={{ background: "none", border: "none", color: "var(--color-text-muted)", cursor: "pointer", opacity: 0.5, transition: "opacity 0.2s" }}
+                className="hover:opacity-100"
+                title="Report User"
+              >
+                🚩
+              </button>
+            </div>
             {referrer.jobTitle && referrer.company && (
               <p style={{ fontSize: "0.825rem", color: "var(--color-text-secondary)", marginTop: "0.1rem" }}>
                 {referrer.jobTitle} @ <strong>{referrer.company}</strong>
@@ -97,7 +110,6 @@ export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
                 border: "1px solid rgba(167, 139, 250, 0.2)",
                 borderRadius: "8px",
                 padding: "0.3rem 0.6rem",
-                marginLeft: "auto",
               }}
             >
               <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--color-purple)", letterSpacing: "0.05em", marginBottom: "0.1rem" }}>AI MATCH</span>
@@ -276,6 +288,14 @@ export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
           referrerName={displayName}
           referrerCompany={referrer.company || referrer.referralPostings?.[0]?.company || ""}
           onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {showReport && (
+        <ReportUserModal
+          reportedId={referrer.userId}
+          reportedName={displayName}
+          onClose={() => setShowReport(false)}
         />
       )}
     </>

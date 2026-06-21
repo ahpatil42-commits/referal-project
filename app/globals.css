@@ -60,6 +60,26 @@
   --shadow-glow-strong: 0 0 60px var(--color-primary-glow-strong);
 }
 
+body.light-theme {
+  --color-bg-void: #f8fafc;
+  --color-bg-deep: #f1f5f9;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #ffffff;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-border-hover: rgba(0, 0, 0, 0.15);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.1);
+  --color-error-bg: rgba(239, 68, 68, 0.05);
+}
+
 /* === Reset & Base === */
 *,
 *::before,
@@ -114,6 +134,20 @@ body {
   z-index: 0;
 }
 
+body.light-theme .bg-space::before {
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(99, 102, 241, 0.08) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 85% 80%,
+      rgba(167, 139, 250, 0.05) 0%,
+      transparent 50%
+    );
+}
+
 /* Animated star particles */
 .bg-space::after {
   content: "";
@@ -133,6 +167,10 @@ body {
   pointer-events: none;
   z-index: 0;
   animation: twinkle 8s ease-in-out infinite alternate;
+}
+
+body.light-theme .bg-space::after {
+  display: none; /* Hide stars in light mode */
 }
 
 @keyframes twinkle {
@@ -181,6 +219,10 @@ body {
   font-size: 0.9375rem;
   transition: all 0.2s ease;
   outline: none;
+}
+
+body.light-theme .form-input {
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .form-input::placeholder {

@@ -2,6 +2,19 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { z } from "zod";
+
+const mockInterviewSchema = z.object({
+  messages: z.array(
+    z.object({
+      role: z.enum(["user", "model"]),
+      content: z.string().min(1).max(5000),
+    })
+  ).min(1),
+  jobTitle: z.string().min(1).max(200),
+  company: z.string().min(1).max(200),
+  coverNote: z.string().max(10000).optional().default(""),
+});
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "dummy_key" });
 
@@ -12,11 +25,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { messages, jobTitle, company, coverNote } = await req.json();
-
-    if (!messages || messages.length === 0) {
-      return NextResponse.json({ error: "Messages required" }, { status: 400 });
+    const body = await req.json();
+    const parsed = mockInterviewSchema.safeParse(body);
+    
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid request payload", details: parsed.error.format() }, { status: 400 });
     }
+
+    const { messages, jobTitle, company, coverNote } = parsed.data;
 
     const seekerProfile = await db.seekerProfile.findUnique({
       where: { userId: session.user.id }

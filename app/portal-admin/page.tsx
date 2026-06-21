@@ -16,7 +16,7 @@ export default async function AdminPage() {
           Platform Overview
         </h1>
         <p style={{ color: "var(--color-text-secondary)" }}>
-          Real-time metrics and moderation dashboard.
+          Real-time metrics, financial performance, and user moderation.
         </p>
       </div>
 
@@ -26,6 +26,11 @@ export default async function AdminPage() {
         gap: "1.5rem",
         marginBottom: "3rem" 
       }}>
+        {/* Financial Metrics */}
+        <StatCard title="MRR (Revenue)" value={`$${stats.mrr}`} icon="💰" color="#10b981" />
+        <StatCard title="Pro Subscribers" value={stats.proUsers} icon="⚡" color="#8b5cf6" />
+        
+        {/* Platform Metrics */}
         <StatCard title="Total Users" value={stats.totalUsers} icon="👥" />
         <StatCard title="Seekers" value={stats.totalSeekers} icon="🎯" color="var(--color-accent)" />
         <StatCard title="Referrers" value={stats.totalReferrers} icon="💼" color="var(--color-primary-light)" />

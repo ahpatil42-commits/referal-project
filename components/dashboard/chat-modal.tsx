@@ -36,6 +36,15 @@ export function ChatModal({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Keyboard Accessibility: Close on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   // Subscribe to real-time messages
   useEffect(() => {
     const channel = pusherClient.subscribe(`chat-request-${requestId}`);
