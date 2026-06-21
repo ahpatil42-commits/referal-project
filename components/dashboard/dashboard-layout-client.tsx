@@ -81,29 +81,68 @@ export function DashboardLayoutClient({ children, sidebar }: DashboardLayoutClie
             overflowX: "hidden",
             overflowY: "auto",
             minWidth: 0,
-            maxWidth: "1100px",
-            margin: "0 auto",
-            position: "relative"
           }}
         >
-          {/* Desktop Header */}
-          <div 
-            style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}
-            className="hidden-on-mobile"
-          >
-            <Breadcrumbs />
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <ThemeToggle />
-              <NotificationBell />
+          <div style={{ maxWidth: "1100px", margin: "0 auto", position: "relative" }}>
+            {/* Desktop Header */}
+            <div 
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}
+              className="hidden-on-mobile"
+            >
+              <Breadcrumbs />
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <ThemeToggle />
+                <NotificationBell />
+              </div>
             </div>
+            
+            {children}
           </div>
-          
-          {children}
         </main>
+
+        {/* Advertisement Space (Right Sidebar) */}
+        <aside 
+          className="ad-sidebar"
+          style={{
+            width: "320px",
+            borderLeft: "1px solid var(--glass-border)",
+            background: "rgba(10, 10, 15, 0.4)",
+            backdropFilter: "blur(12px)",
+            padding: "2rem",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            overflowY: "auto"
+          }}
+        >
+          <div style={{
+            width: "100%",
+            height: "600px",
+            background: "rgba(255,255,255,0.02)",
+            border: "1px dashed rgba(255,255,255,0.15)",
+            borderRadius: "12px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "1rem",
+            color: "var(--color-text-muted)"
+          }}>
+            <span style={{ fontSize: "2rem", opacity: 0.5 }}>📺</span>
+            <span style={{ fontSize: "0.9rem", fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>
+              Ad Space
+            </span>
+          </div>
+        </aside>
       </div>
       <style>{`
         @media (max-width: 900px) {
           .hidden-on-mobile {
+            display: none !important;
+          }
+        }
+        @media (max-width: 1200px) {
+          .ad-sidebar {
             display: none !important;
           }
         }
