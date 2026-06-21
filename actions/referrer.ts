@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { sendEmailNotification } from "@/lib/email";
 import { z } from "zod";
+import { pusherServer } from "@/lib/pusher";
 
 // ── Profile ──────────────────────────────────────────────────────────────────
 
@@ -124,6 +125,13 @@ export async function updateRequestStatus(
           message: `Your request for ${updated.jobTitle} at ${updated.company} was ${status.toLowerCase()}.`,
           link: "/dashboard/seeker/requests"
         }
+      });
+
+      // Send Real-Time Pusher Notification
+      await pusherServer.trigger(`user-${updated.seeker.userId}`, "new-notification", {
+        title: `Request ${status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}`,
+        message: `Your request for ${updated.jobTitle} at ${updated.company} was ${status.toLowerCase()}.`,
+        link: "/dashboard/seeker/requests"
       });
     }
 

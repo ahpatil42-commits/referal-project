@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { RealtimeProvider } from "@/components/providers/realtime-provider";
 import { auth } from "@/auth";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -24,7 +25,11 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <AuthProvider session={session}>{children}</AuthProvider>
+        <AuthProvider session={session}>
+          <RealtimeProvider>
+            {children}
+          </RealtimeProvider>
+        </AuthProvider>
         <Toaster />
       </body>
     </html>

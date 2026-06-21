@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect, useRef } from "react";
 import { sendMessage } from "@/actions/messages";
-import { getPusherClient } from "@/lib/pusher";
+import { pusherClient } from "@/lib/pusher-client";
 
 interface Message {
   id: string;
@@ -38,8 +38,7 @@ export function ChatModal({
 
   // Subscribe to real-time messages
   useEffect(() => {
-    const pusher = getPusherClient();
-    const channel = pusher.subscribe(`chat-request-${requestId}`);
+    const channel = pusherClient.subscribe(`chat-request-${requestId}`);
 
     channel.bind("new-message", (newMsg: Message) => {
       // Convert string dates from Pusher JSON to Date objects if necessary
@@ -53,7 +52,7 @@ export function ChatModal({
     });
 
     return () => {
-      pusher.unsubscribe(`chat-request-${requestId}`);
+      pusherClient.unsubscribe(`chat-request-${requestId}`);
     };
   }, [requestId]);
 

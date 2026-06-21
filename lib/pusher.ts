@@ -1,17 +1,15 @@
 import PusherServer from "pusher";
-import PusherClient from "pusher-js";
 
-// Ensure this doesn't crash if environment variables are missing during local dev
+// Create a dummy pusher instance if env vars are missing so build doesn't crash
+const appId = process.env.PUSHER_APP_ID || "dummy_app_id";
+const key = process.env.NEXT_PUBLIC_PUSHER_KEY || "dummy_key";
+const secret = process.env.PUSHER_SECRET || "dummy_secret";
+const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "us2";
+
 export const pusherServer = new PusherServer({
-  appId: process.env.PUSHER_APP_ID || "app_id",
-  key: process.env.NEXT_PUBLIC_PUSHER_KEY || "key",
-  secret: process.env.PUSHER_SECRET || "secret",
-  cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "us2",
+  appId,
+  key,
+  secret,
+  cluster,
   useTLS: true,
 });
-
-export const getPusherClient = () => {
-  return new PusherClient(process.env.NEXT_PUBLIC_PUSHER_KEY || "key", {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "us2",
-  });
-};

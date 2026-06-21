@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sendEmailNotification } from "@/lib/email";
 import { actionRateLimiter } from "@/lib/rate-limit";
+import { pusherServer } from "@/lib/pusher";
 
 // ── Profile ──────────────────────────────────────────────────────────────────
 
@@ -152,6 +153,13 @@ export async function sendReferralRequest(
           message: `${session.user.name || session.user.email} requested a referral for ${jobTitle} at ${company}.`,
           link: "/dashboard/referrer/requests"
         }
+      });
+
+      // Send Real-Time Pusher Notification
+      await pusherServer.trigger(`user-${referrerProfile.userId}`, "new-notification", {
+        title: "New Referral Request",
+        message: `${session.user.name || session.user.email} requested a referral for ${jobTitle} at ${company}.`,
+        link: "/dashboard/referrer/requests"
       });
     }
 

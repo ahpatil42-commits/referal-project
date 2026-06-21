@@ -19,6 +19,7 @@
     "@hookform/resolvers": "^3.10.0",
     "@prisma/client": "^5.22.0",
     "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.9",
     "@stripe/stripe-js": "^9.8.0",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.2.0",
