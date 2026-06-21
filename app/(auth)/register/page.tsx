@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerUser } from "@/actions/auth";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 const RegisterSchema = z
   .object({
@@ -51,6 +52,9 @@ export default function RegisterPage() {
       setServerError(response.error);
     } else if (response.success && response.redirect) {
       setServerSuccess(response.success);
+      if (response.devOtp) {
+        toast.info(`DEV MODE OTPs - Email: ${response.devOtp.email} | Mobile: ${response.devOtp.mobile || "N/A"}`, { duration: 10000 });
+      }
       setTimeout(() => router.push(response.redirect!), 1500);
     } else if (response.success) {
       setServerSuccess(response.success);

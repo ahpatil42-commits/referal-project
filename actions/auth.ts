@@ -121,7 +121,11 @@ export async function registerUser(data: {
     }
     
     // Redirect to the OTP verification page
-    return { success: "Account created! Please verify your OTPs.", redirect: `/verify-otp?email=${encodeURIComponent(data.email)}${data.mobile ? `&mobile=${encodeURIComponent(data.mobile)}` : ''}` };
+    return { 
+      success: "Account created! Please verify your OTPs.", 
+      redirect: `/verify-otp?email=${encodeURIComponent(data.email)}${data.mobile ? `&mobile=${encodeURIComponent(data.mobile)}` : ''}`,
+      devOtp: process.env.NODE_ENV !== "production" ? { email: emailOtp, mobile: data.mobile ? mobileOtp : undefined } : undefined
+    };
   } catch (error) {
     return { error: "Something went wrong" };
   }
