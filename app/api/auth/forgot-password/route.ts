@@ -10,8 +10,7 @@ export async function POST(req: Request) {
 
     const user = await db.user.findUnique({ where: { email } });
     if (!user) {
-      // Don't leak whether the email exists
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ error: "No account found with this email address." }, { status: 404 });
     }
 
     // Generate token

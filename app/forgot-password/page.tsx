@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
         if (data.error) throw new Error(data.error);
 
         setIsSubmitted(true);
-        toast.success("If an account exists, a reset link was sent.");
+        toast.success("Reset link sent to your email address!");
       } catch (err: any) {
         toast.error(err.message || "Failed to send reset link");
       }
