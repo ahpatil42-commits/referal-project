@@ -12,8 +12,13 @@ interface AccountVerificationSettingsProps {
 }
 
 export function AccountVerificationSettings({ email, emailVerified, mobile, mobileVerified }: AccountVerificationSettingsProps) {
+  const knownCountryCodes = ["+1", "+44", "+91", "+61", "+49", "+86", "+81"];
+  const initialCountryCode = knownCountryCodes.find(c => mobile?.startsWith(c)) || "+1";
+  const initialMobile = mobile ? mobile.replace(initialCountryCode, "") : "";
+
   const [isEditingMobile, setIsEditingMobile] = useState(false);
-  const [mobileInput, setMobileInput] = useState(mobile || "");
+  const [countryCodeInput, setCountryCodeInput] = useState(initialCountryCode);
+  const [mobileInput, setMobileInput] = useState(initialMobile);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [otpSentFor, setOtpSentFor] = useState<"email" | "mobile" | null>(null);
@@ -21,7 +26,8 @@ export function AccountVerificationSettings({ email, emailVerified, mobile, mobi
 
   const handleUpdateMobile = async () => {
     setIsSubmitting(true);
-    const res = await updateMobileNumber(mobileInput);
+    const fullMobile = mobileInput.trim() ? `${countryCodeInput}${mobileInput.trim()}` : "";
+    const res = await updateMobileNumber(fullMobile);
     if (res.error) {
       toast.error(res.error);
     } else {
@@ -100,16 +106,30 @@ export function AccountVerificationSettings({ email, emailVerified, mobile, mobi
             <div style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginBottom: "0.25rem" }}>Mobile Number</div>
             {isEditingMobile ? (
               <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.25rem" }}>
+                <select
+                  value={countryCodeInput}
+                  onChange={(e) => setCountryCodeInput(e.target.value)}
+                  className="form-input"
+                  style={{ width: "90px", padding: "0 0.5rem", flexShrink: 0 }}
+                >
+                  <option value="+1">+1 (US/CA)</option>
+                  <option value="+44">+44 (UK)</option>
+                  <option value="+91">+91 (IN)</option>
+                  <option value="+61">+61 (AU)</option>
+                  <option value="+49">+49 (DE)</option>
+                  <option value="+86">+86 (CN)</option>
+                  <option value="+81">+81 (JP)</option>
+                </select>
                 <input 
                   type="tel" 
                   value={mobileInput} 
                   onChange={(e) => setMobileInput(e.target.value)} 
-                  placeholder="+1234567890"
+                  placeholder="1234567890"
                   className="form-input"
-                  style={{ width: "200px", padding: "0.4rem 0.75rem", fontSize: "0.9rem" }}
+                  style={{ width: "150px", padding: "0.4rem 0.75rem", fontSize: "0.9rem" }}
                 />
                 <button onClick={handleUpdateMobile} disabled={isSubmitting} className="btn-primary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem" }}>Save</button>
-                <button onClick={() => { setIsEditingMobile(false); setMobileInput(mobile || ""); }} className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem" }}>Cancel</button>
+                <button onClick={() => { setIsEditingMobile(false); setMobileInput(initialMobile); setCountryCodeInput(initialCountryCode); }} className="btn-secondary" style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem" }}>Cancel</button>
               </div>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>

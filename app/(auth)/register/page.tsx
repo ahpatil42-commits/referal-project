@@ -17,6 +17,7 @@ const RegisterSchema = z
       .string()
       .min(8, { message: "Password must be at least 8 characters" })
       .regex(/[0-9]/, { message: "Password must contain at least 1 number" }),
+    countryCode: z.string().optional(),
     mobile: z.string().optional(),
   });
 
@@ -38,6 +39,7 @@ export default function RegisterPage() {
     defaultValues: {
       email: "",
       password: "",
+      countryCode: "+1",
       mobile: "",
     },
   });
@@ -46,7 +48,8 @@ export default function RegisterPage() {
     setServerError(null);
     setServerSuccess(null);
 
-    const response = await registerUser({ ...data, role: "SEEKER" });
+    const fullMobile = data.mobile ? `${data.countryCode}${data.mobile}` : undefined;
+    const response = await registerUser({ ...data, mobile: fullMobile, role: "SEEKER" });
 
     if (response.error) {
       setServerError(response.error);
@@ -192,13 +195,29 @@ export default function RegisterPage() {
             <label htmlFor="register-mobile" className="form-label">
               Mobile Number <span style={{ color: "var(--color-text-muted)", fontSize: "0.8rem", fontWeight: 400 }}>(Optional)</span>
             </label>
-            <input
-              id="register-mobile"
-              type="tel"
-              className={`form-input ${errors.mobile ? "error" : ""}`}
-              placeholder="+1234567890"
-              {...register("mobile")}
-            />
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <select
+                {...register("countryCode")}
+                className="form-input"
+                style={{ width: "90px", padding: "0 0.5rem", flexShrink: 0 }}
+              >
+                <option value="+1">+1 (US/CA)</option>
+                <option value="+44">+44 (UK)</option>
+                <option value="+91">+91 (IN)</option>
+                <option value="+61">+61 (AU)</option>
+                <option value="+49">+49 (DE)</option>
+                <option value="+86">+86 (CN)</option>
+                <option value="+81">+81 (JP)</option>
+              </select>
+              <input
+                id="register-mobile"
+                type="tel"
+                className={`form-input ${errors.mobile ? "error" : ""}`}
+                placeholder="1234567890"
+                style={{ flex: 1 }}
+                {...register("mobile")}
+              />
+            </div>
           </div>
 
 
