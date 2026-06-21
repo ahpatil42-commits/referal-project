@@ -42,6 +42,41 @@ export async function sendVerificationEmail(email: string, token: string) {
   }
 }
 
+export async function sendOTPEmail(email: string, otp: string) {
+  if (!resend) {
+    console.log("\n=============================================");
+    console.log("   📧 EMAIL OTP (DEV MODE)   ");
+    console.log("=============================================");
+    console.log(`Your verification code is: ${otp}`);
+    console.log("=============================================\n");
+    return;
+  }
+
+  const { data, error } = await resend.emails.send({
+    from: fromEmail,
+    to: email,
+    subject: "Your ReferralAI Verification Code",
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+        <h2>Verify your email</h2>
+        <p>Your 6-digit verification code is:</p>
+        <div style="margin: 30px 0;">
+          <strong style="font-size: 24px; letter-spacing: 4px; padding: 12px 24px; background: #f3f4f6; border-radius: 6px;">
+            ${otp}
+          </strong>
+        </div>
+        <p style="color: #666; font-size: 14px;">This code will expire in 15 minutes.</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    console.error("[RESEND ERROR - OTP]:", error);
+  } else {
+    console.log("[RESEND SUCCESS - OTP]:", data);
+  }
+}
+
 export async function sendPasswordResetEmail(email: string, token: string) {
   const resetUrl = `${baseUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 

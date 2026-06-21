@@ -20,6 +20,8 @@ model User {
   name          String?
   email         String          @unique
   emailVerified DateTime?
+  mobile        String?         @unique
+  mobileVerified DateTime?
   image         String?
   password      String?
   role          String          @default("SEEKER")
@@ -193,6 +195,15 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model VerificationOTP {
+  id         String   @id @default(cuid())
+  identifier String
+  otp        String
+  expires    DateTime
+
+  @@unique([identifier, otp])
 }
 
 model Notification {

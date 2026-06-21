@@ -58,7 +58,7 @@ export function ResumeRoaster() {
       }}
     >
       <div style={{ fontSize: "2rem" }}>🔥</div>
-      <div>
+      <div style={{ flex: 1 }}>
         <h4 style={{ color: "#ef4444", fontWeight: 600, margin: 0 }}>
           AI Resume Roaster
         </h4>

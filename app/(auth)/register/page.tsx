@@ -15,8 +15,8 @@ const RegisterSchema = z
     password: z
       .string()
       .min(8, { message: "Password must be at least 8 characters" })
-      .regex(/[A-Z]/, { message: "Password must contain at least 1 uppercase letter" })
       .regex(/[0-9]/, { message: "Password must contain at least 1 number" }),
+    mobile: z.string().optional(),
   });
 
 type RegisterFormValues = z.infer<typeof RegisterSchema>;
@@ -37,6 +37,7 @@ export default function RegisterPage() {
     defaultValues: {
       email: "",
       password: "",
+      mobile: "",
     },
   });
 
@@ -48,9 +49,12 @@ export default function RegisterPage() {
 
     if (response.error) {
       setServerError(response.error);
+    } else if (response.success && response.redirect) {
+      setServerSuccess(response.success);
+      setTimeout(() => router.push(response.redirect!), 1500);
     } else if (response.success) {
       setServerSuccess(response.success);
-      setTimeout(() => router.push("/login"), 1800);
+      setTimeout(() => router.push("/login"), 1500);
     }
   };
 
@@ -177,6 +181,20 @@ export default function RegisterPage() {
                 <span>✕</span> {errors.email.message}
               </p>
             )}
+          </div>
+
+          {/* Mobile Number */}
+          <div>
+            <label htmlFor="register-mobile" className="form-label">
+              Mobile Number <span style={{ color: "var(--color-text-muted)", fontSize: "0.8rem", fontWeight: 400 }}>(Optional)</span>
+            </label>
+            <input
+              id="register-mobile"
+              type="tel"
+              className={`form-input ${errors.mobile ? "error" : ""}`}
+              placeholder="+1234567890"
+              {...register("mobile")}
+            />
           </div>
 
 

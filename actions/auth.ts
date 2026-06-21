@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import crypto from "crypto";
-import { sendVerificationEmail } from "@/lib/mail";
+import { sendPasswordResetEmail, sendCorporateVerificationEmail, sendOTPEmail } from "@/lib/mail";
+import { sendSMSOTP } from "@/lib/sms";
 
 const registerRateLimit = new Map<string, { count: number; timestamp: number }>();
 
@@ -18,6 +19,7 @@ const RegisterSchema = z.object({
     .regex(/[0-9]/),
   role: z.enum(["SEEKER", "REFERRER"]),
   corporateEmail: z.string().optional(),
+  mobile: z.string().optional(),
 });
 
 export async function signInWithProvider(provider: "google" | "facebook" | "linkedin") {
@@ -29,6 +31,7 @@ export async function registerUser(data: {
   password: string;
   role: "SEEKER" | "REFERRER";
   corporateEmail?: string;
+  mobile?: string;
 }) {
   try {
     const parsed = RegisterSchema.safeParse(data);
@@ -66,6 +69,7 @@ export async function registerUser(data: {
         password: hashedPassword,
         name: data.email.split("@")[0],
         role: data.role,
+        mobile: data.mobile,
         ...(data.role === "REFERRER" && data.corporateEmail
           ? {
               referrerProfile: {
@@ -78,18 +82,30 @@ export async function registerUser(data: {
       },
     });
 
-    // Create Verification Token
-    const token = crypto.randomBytes(32).toString("hex");
-    await db.verificationToken.create({
+    // Generate 6-digit OTPs
+    const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    await db.verificationOTP.create({
       data: {
         identifier: data.email,
-        token,
-        expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        otp: emailOtp,
+        expires: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
       }
     });
 
-    // Send Verification Email
-    await sendVerificationEmail(data.email, token);
+    await sendOTPEmail(data.email, emailOtp);
+
+    if (data.mobile) {
+      const mobileOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      await db.verificationOTP.create({
+        data: {
+          identifier: data.mobile,
+          otp: mobileOtp,
+          expires: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
+        }
+      });
+      await sendSMSOTP(data.mobile, mobileOtp);
+    }
 
     if (data.role === "REFERRER" && data.corporateEmail) {
       const crypto = await import("crypto");
@@ -101,11 +117,11 @@ export async function registerUser(data: {
           expires: new Date(Date.now() + 24 * 3600 * 1000)
         }
       });
-      const { sendCorporateVerificationEmail } = await import("@/lib/mail");
       await sendCorporateVerificationEmail(data.corporateEmail, token);
     }
     
-    return { success: "Account created! Please sign in." };
+    // Redirect to the OTP verification page
+    return { success: "Account created! Please verify your OTPs.", redirect: `/verify-otp?email=${encodeURIComponent(data.email)}${data.mobile ? `&mobile=${encodeURIComponent(data.mobile)}` : ''}` };
   } catch (error) {
     return { error: "Something went wrong" };
   }
