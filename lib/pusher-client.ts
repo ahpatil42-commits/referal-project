@@ -1,3 +1,5 @@
+"use client";
+
 import Pusher from "pusher-js";
 
 const key = process.env.NEXT_PUBLIC_PUSHER_KEY || "dummy_key";
