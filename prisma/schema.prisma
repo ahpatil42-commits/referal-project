@@ -55,6 +55,9 @@ model User {
   // Reports
   reportsSubmitted Report[] @relation("ReportedBy")
   reportsReceived  Report[] @relation("ReportedUser")
+
+  // Feedbacks
+  feedbacks        Feedback[]
 }
 
 model SeekerProfile {
@@ -148,6 +151,15 @@ model JobPosting {
   location    String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  message   String
+  createdAt DateTime @default(now())
 }
 
 model Message {

@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import { switchUserRole } from "@/actions/user";
 import { toast } from "sonner";
+import { FeedbackModal } from "@/components/dashboard/feedback-modal";
 
 interface NavItem {
   href: string;
@@ -40,6 +41,7 @@ export function Sidebar({ role, email, image }: SidebarProps) {
   const router = useRouter();
   const { update } = useSession();
   const [isSwitching, setIsSwitching] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   const navItems = role === "REFERRER" ? REFERRER_NAV : SEEKER_NAV;
   const isReferrer = role === "REFERRER";
@@ -80,8 +82,9 @@ export function Sidebar({ role, email, image }: SidebarProps) {
   };
 
   return (
-    <aside
-      style={{
+    <>
+      <aside
+        style={{
         width: "220px",
         minWidth: "220px",
         height: "100vh",
@@ -367,6 +370,31 @@ export function Sidebar({ role, email, image }: SidebarProps) {
           Share Platform
         </button>
 
+        {/* Feedback Button */}
+        <button
+          onClick={() => setIsFeedbackOpen(true)}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.5rem",
+            padding: "0.5rem 0.625rem",
+            borderRadius: "8px",
+            border: "1px solid var(--glass-border)",
+            background: "rgba(255,255,255,0.03)",
+            color: "var(--color-text-primary)",
+            fontSize: "0.825rem",
+            fontWeight: 500,
+            cursor: "pointer",
+            fontFamily: "inherit",
+            transition: "all 0.15s ease",
+          }}
+          className="hover:bg-white/10"
+        >
+          💡 Send Feedback
+        </button>
+
         {/* Sign Out */}
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
@@ -393,5 +421,7 @@ export function Sidebar({ role, email, image }: SidebarProps) {
         </button>
       </div>
     </aside>
+    <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
+    </>
   );
 }
