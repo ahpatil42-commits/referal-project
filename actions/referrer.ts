@@ -33,6 +33,7 @@ export async function updateReferrerProfile(
 
   const data = validated.data;
 
+  try {
     const currentProfile = await db.referrerProfile.findUnique({
       where: { userId: session.user.id }
     });
