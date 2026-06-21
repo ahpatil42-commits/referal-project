@@ -44,10 +44,6 @@ export function AccountVerificationSettings({ email, emailVerified, mobile, mobi
       toast.error(res.error);
     } else {
       toast.success(res.success);
-      if (res.devOtp) {
-        toast.info(`DEV MODE: Your code is ${res.devOtp}`);
-        setOtpInput(res.devOtp); // Auto-fill for convenience
-      }
       setOtpSentFor(type);
     }
     setIsSubmitting(false);

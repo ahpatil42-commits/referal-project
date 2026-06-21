@@ -57,8 +57,7 @@ export async function sendVerificationOtp(type: "email" | "mobile") {
     }
 
     return { 
-      success: `Verification code sent to your ${type}.`,
-      devOtp: process.env.NODE_ENV !== "production" ? otp : undefined
+      success: `Verification code sent to your ${type}.`
     };
   } catch (error) {
     return { error: "Failed to send verification code." };

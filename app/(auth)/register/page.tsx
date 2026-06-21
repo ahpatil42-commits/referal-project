@@ -55,9 +55,6 @@ export default function RegisterPage() {
       setServerError(response.error);
     } else if (response.success && response.redirect) {
       setServerSuccess(response.success);
-      if (response.devOtp) {
-        toast.info(`DEV MODE OTPs - Email: ${response.devOtp.email} | Mobile: ${response.devOtp.mobile || "N/A"}`, { duration: 10000 });
-      }
       setTimeout(() => router.push(response.redirect!), 1500);
     } else if (response.success) {
       setServerSuccess(response.success);
