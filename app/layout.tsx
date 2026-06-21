@@ -4,6 +4,7 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import { RealtimeProvider } from "@/components/providers/realtime-provider";
 import { auth } from "@/auth";
 import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: {
@@ -31,6 +32,7 @@ export default async function RootLayout({
           </RealtimeProvider>
         </AuthProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );

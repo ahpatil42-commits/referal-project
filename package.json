@@ -10,6 +10,7 @@
     "create-admin": "node scripts/create-admin.mjs",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:seed": "node scripts/seed.mjs",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
@@ -21,6 +22,7 @@
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.0.9",
     "@stripe/stripe-js": "^9.8.0",
+    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.2.0",
     "isomorphic-dompurify": "^3.18.0",
