@@ -128,6 +128,7 @@ model ReferralPosting {
   experience  String?
   skills      String?
   location    String?
+  noticePeriod String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

@@ -82,6 +82,8 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
       if (data.bio) setValue("bio", data.bio, { shouldValidate: true });
       if (data.skills) setValue("skills", parseList(data.skills), { shouldValidate: true });
       if (data.targetRoles) setValue("targetRoles", parseList(data.targetRoles), { shouldValidate: true });
+      if (data.linkedinUrl) setValue("linkedinUrl", data.linkedinUrl, { shouldValidate: true });
+      if (data.githubUrl) setValue("githubUrl", data.githubUrl, { shouldValidate: true });
       if (data.resumeStoragePath) setValue("resumeStoragePath", data.resumeStoragePath);
 
       toast.success("Resume parsed! Review the auto-filled data below.");

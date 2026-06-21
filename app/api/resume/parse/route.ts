@@ -77,6 +77,8 @@ export async function POST(request: Request) {
 - "bio": A short, compelling professional summary written in the first person (max 3 sentences).
 - "skills": An array of their top technical skills (max 10 strings).
 - "targetRoles": An array of potential job roles this person is fit for (e.g., ["Software Engineer", "Frontend Developer"]).
+- "linkedinUrl": Their LinkedIn profile URL if found, otherwise null.
+- "githubUrl": Their GitHub profile URL if found, otherwise null.
 
 Resume Text:
 ${text.substring(0, 15000)}
@@ -107,6 +109,8 @@ ${text.substring(0, 15000)}
       bio: parsedData.bio || "",
       skills: JSON.stringify(parsedData.skills || []),
       targetRoles: JSON.stringify(parsedData.targetRoles || []),
+      linkedinUrl: parsedData.linkedinUrl || "",
+      githubUrl: parsedData.githubUrl || "",
       resumeStoragePath
     });
   } catch (error) {

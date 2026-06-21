@@ -9,14 +9,19 @@ export async function switchUserRole(newRole: "SEEKER" | "REFERRER") {
   if (!session?.user?.id) return { error: "Not authenticated" };
 
   try {
-    // Check if the profile exists for the requested role
     let needsSetup = false;
     if (newRole === "SEEKER") {
-      const profile = await db.seekerProfile.findUnique({ where: { userId: session.user.id } });
-      if (!profile) needsSetup = true;
+      let profile = await db.seekerProfile.findUnique({ where: { userId: session.user.id } });
+      if (!profile) {
+        profile = await db.seekerProfile.create({ data: { userId: session.user.id } });
+        needsSetup = true;
+      }
     } else {
-      const profile = await db.referrerProfile.findUnique({ where: { userId: session.user.id } });
-      if (!profile) needsSetup = true;
+      let profile = await db.referrerProfile.findUnique({ where: { userId: session.user.id } });
+      if (!profile) {
+        profile = await db.referrerProfile.create({ data: { userId: session.user.id } });
+        needsSetup = true;
+      }
     }
 
     // Update the active mode (role) in the user table

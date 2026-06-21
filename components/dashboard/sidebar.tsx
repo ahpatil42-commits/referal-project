@@ -87,7 +87,7 @@ export function Sidebar({ role, email, image }: SidebarProps) {
         top: 0,
         display: "flex",
         flexDirection: "column",
-        background: "rgba(8,8,20,0.85)",
+        background: "var(--color-bg-elevated)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
         borderRight: "1px solid var(--glass-border)",

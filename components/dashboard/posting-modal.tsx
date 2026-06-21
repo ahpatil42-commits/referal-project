@@ -15,6 +15,7 @@ const schema = z.object({
   experience: z.string().optional(),
   skills: z.string().optional(),
   location: z.string().optional(),
+  noticePeriod: z.string().optional(),
   description: z.string().optional(),
 });
 
@@ -62,6 +63,7 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
       if (data.experience) setValue("experience", data.experience, { shouldValidate: true });
       if (data.skills) setValue("skills", data.skills, { shouldValidate: true });
       if (data.location) setValue("location", data.location, { shouldValidate: true });
+      if (data.noticePeriod) setValue("noticePeriod", data.noticePeriod, { shouldValidate: true });
       if (data.description) setValue("description", data.description, { shouldValidate: true });
       
       toast.success("Autofilled from Job Description!");
@@ -210,7 +212,7 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
             {errors.jobUrl && <p className="form-error">✕ {errors.jobUrl.message}</p>}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <div>
               <label className="form-label">Experience <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
               <textarea className={`form-input ${errors.experience ? "error" : ""}`} rows={2} placeholder="e.g. 3+ years" style={{ resize: "vertical" }} {...register("experience")} />
@@ -225,6 +227,11 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
               <label className="form-label">Location <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
               <textarea className={`form-input ${errors.location ? "error" : ""}`} rows={2} placeholder="e.g. Remote, NY" style={{ resize: "vertical" }} {...register("location")} />
               {errors.location && <p className="form-error">✕ {errors.location.message}</p>}
+            </div>
+            <div>
+              <label className="form-label">Notice Period <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
+              <textarea className={`form-input ${errors.noticePeriod ? "error" : ""}`} rows={2} placeholder="e.g. 30 days, Immediate" style={{ resize: "vertical" }} {...register("noticePeriod")} />
+              {errors.noticePeriod && <p className="form-error">✕ {errors.noticePeriod.message}</p>}
             </div>
           </div>
 

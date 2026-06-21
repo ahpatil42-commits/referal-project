@@ -4,16 +4,20 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
-export async function createReferralPosting(data: { jobTitle: string; company: string; jobUrl?: string; description?: string; experience?: string; skills?: string; location?: string }) {
+export async function createReferralPosting(data: { jobTitle: string; company: string; jobUrl?: string; description?: string; experience?: string; skills?: string; location?: string; noticePeriod?: string }) {
   try {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
 
-    const referrer = await db.referrerProfile.findUnique({
+    let referrer = await db.referrerProfile.findUnique({
       where: { userId: session.user.id },
     });
 
-    if (!referrer) return { error: "Referrer profile not found" };
+    if (!referrer) {
+      referrer = await db.referrerProfile.create({
+        data: { userId: session.user.id },
+      });
+    }
 
     await db.referralPosting.create({
       data: {
@@ -25,6 +29,7 @@ export async function createReferralPosting(data: { jobTitle: string; company: s
         experience: data.experience || null,
         skills: data.skills || null,
         location: data.location || null,
+        noticePeriod: data.noticePeriod || null,
         isActive: true,
       },
     });
