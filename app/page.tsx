@@ -3,11 +3,16 @@ import { db } from "@/lib/db";
 import { Sparkles, Users, Briefcase, CheckCircle2, ArrowRight, Zap, Target, MessageSquare } from "lucide-react";
 
 export default async function HomePage() {
-  const [totalSeekers, totalReferrers, totalRequests] = await Promise.all([
-    db.user.count({ where: { role: "SEEKER" } }),
-    db.user.count({ where: { role: "REFERRER" } }),
-    db.referralRequest.count({ where: { status: "ACCEPTED" } })
-  ]);
+  let totalSeekers = 0, totalReferrers = 0, totalRequests = 0;
+  try {
+    [totalSeekers, totalReferrers, totalRequests] = await Promise.all([
+      db.user.count({ where: { role: "SEEKER" } }),
+      db.user.count({ where: { role: "REFERRER" } }),
+      db.referralRequest.count({ where: { status: "ACCEPTED" } })
+    ]);
+  } catch (error) {
+    console.error("Database connection failed on home page:", error);
+  }
 
   return (
     <main
