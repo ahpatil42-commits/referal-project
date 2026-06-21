@@ -52,7 +52,7 @@ export default function PricingPage() {
       <div className="z-content" style={{ display: "flex", gap: "2rem", flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: "1050px" }}>
         
         {/* Starter Plan */}
-        <div className="glass-panel" style={{ flex: "1", minWidth: "320px", maxWidth: "480px", padding: "3rem", borderTop: "4px solid var(--color-text-muted)", transition: "transform 0.3s ease" }} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+        <div className="glass-panel dashboard-card" style={{ flex: "1", minWidth: "320px", maxWidth: "480px", padding: "3rem", borderTop: "4px solid var(--color-text-muted)" }}>
           <h3 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <Shield className="text-text-muted" size={24} color="var(--color-text-muted)" />
             Starter
@@ -64,7 +64,7 @@ export default function PricingPage() {
           <p style={{ color: "var(--color-text-secondary)", fontSize: "1rem", marginBottom: "2.5rem", lineHeight: 1.6 }}>
             Perfect for getting started and exploring the referral network.
           </p>
-          <Link href="/register" style={{ display: "block", textAlign: "center", textDecoration: "none", background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", marginBottom: "2.5rem", padding: "1rem", borderRadius: "var(--radius-md)", color: "var(--color-text-primary)", fontWeight: 600, transition: "background 0.2s ease" }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+          <Link href="/register" className="btn-secondary-hover" style={{ display: "block", textAlign: "center", textDecoration: "none", background: "rgba(255,255,255,0.05)", border: "1px solid var(--glass-border)", marginBottom: "2.5rem", padding: "1rem", borderRadius: "var(--radius-md)", color: "var(--color-text-primary)", fontWeight: 600, transition: "background 0.2s ease" }}>
             Get Started Free
           </Link>
           <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: "1.25rem", color: "var(--color-text-secondary)", fontSize: "1rem" }}>
@@ -75,7 +75,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pro Plan */}
-        <div className="glass-panel" style={{ flex: "1", minWidth: "320px", maxWidth: "480px", padding: "3rem", borderTop: "4px solid var(--color-primary)", background: "linear-gradient(to bottom, rgba(99,102,241,0.08), transparent)", position: "relative", boxShadow: "0 20px 40px rgba(99,102,241,0.15)", transition: "transform 0.3s ease" }} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+        <div className="glass-panel dashboard-card" style={{ flex: "1", minWidth: "320px", maxWidth: "480px", padding: "3rem", borderTop: "4px solid var(--color-primary)", background: "linear-gradient(to bottom, rgba(99,102,241,0.08), transparent)", position: "relative", boxShadow: "0 20px 40px rgba(99,102,241,0.15)" }}>
           <div style={{ position: "absolute", top: "-1rem", left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))", color: "white", padding: "0.4rem 1.25rem", borderRadius: "99px", fontSize: "0.75rem", fontWeight: 800, letterSpacing: "0.1em", boxShadow: "0 4px 12px rgba(99,102,241,0.4)", display: "flex", alignItems: "center", gap: "0.5rem", zIndex: 10 }}>
             <Sparkles size={14} /> MOST POPULAR
           </div>

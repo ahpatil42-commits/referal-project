@@ -103,6 +103,7 @@ export default async function HomePage() {
           </Link>
           <Link
             href="/login"
+            className="btn-secondary-hover"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -117,8 +118,6 @@ export default async function HomePage() {
               border: "1px solid var(--glass-border)",
               transition: "all 0.3s ease",
             }}
-            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
-            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
           >
             Sign In
             <ArrowRight size={18} />
