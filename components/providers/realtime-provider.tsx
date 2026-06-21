@@ -11,7 +11,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!session?.user?.id) return;
+    if (!session?.user?.id || !pusherClient) return;
 
     // Subscribe to a private channel unique to the user
     const channelName = `user-${session.user.id}`;
