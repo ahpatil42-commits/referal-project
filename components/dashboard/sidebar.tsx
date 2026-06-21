@@ -85,11 +85,8 @@ export function Sidebar({ role, email, image }: SidebarProps) {
     <>
       <aside
         style={{
-        width: "220px",
-        minWidth: "220px",
+        width: "100%",
         height: "100vh",
-        position: "sticky",
-        top: 0,
         display: "flex",
         flexDirection: "column",
         background: "var(--color-bg-elevated)",
