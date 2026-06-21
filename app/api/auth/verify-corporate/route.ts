@@ -41,11 +41,6 @@ export async function GET(request: Request) {
     await db.verificationToken.deleteMany({
       where: { token: existingToken.token }
     });
-      // ignore delete errors
-      db.verificationToken.deleteMany({
-        where: { token }
-      }).catch(console.error);
-    });
 
     // Redirect to a success page or login
     return NextResponse.redirect(new URL("/dashboard/referrer/profile?verified=true", request.url));
