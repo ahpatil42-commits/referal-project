@@ -95,8 +95,9 @@ export async function registerUser(data: {
 
     await sendOTPEmail(data.email, emailOtp);
 
+    let mobileOtp: string | undefined;
     if (data.mobile) {
-      const mobileOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      mobileOtp = Math.floor(100000 + Math.random() * 900000).toString();
       await db.verificationOTP.create({
         data: {
           identifier: data.mobile,
