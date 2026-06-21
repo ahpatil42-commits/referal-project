@@ -33,8 +33,13 @@ export async function updateReferrerProfile(
 
   const data = validated.data;
 
-  try {
-    await db.referrerProfile.upsert({
+    const currentProfile = await db.referrerProfile.findUnique({
+      where: { userId: session.user.id }
+    });
+
+    const isNewCorporateEmail = data.corporateEmail && data.corporateEmail !== currentProfile?.corporateEmail;
+
+    const profile = await db.referrerProfile.upsert({
       where:  { userId: session.user.id },
       update: {
         company:        data.company        || null,
@@ -44,6 +49,7 @@ export async function updateReferrerProfile(
         corporateEmail: data.corporateEmail || null,
         linkedinUrl:    data.linkedinUrl    || null,
         maxReferrals:   data.maxReferrals   ?? 3,
+        isVerified:     isNewCorporateEmail ? false : undefined, // Reset verification on change
       },
       create: {
         userId:         session.user.id,
@@ -54,8 +60,30 @@ export async function updateReferrerProfile(
         corporateEmail: data.corporateEmail || null,
         linkedinUrl:    data.linkedinUrl    || null,
         maxReferrals:   data.maxReferrals   ?? 3,
+        isVerified:     false,
       },
     });
+
+    if (isNewCorporateEmail && data.corporateEmail) {
+      const crypto = await import("crypto");
+      const token = crypto.randomBytes(32).toString("hex");
+      
+      // Delete any existing tokens for this email
+      await db.verificationToken.deleteMany({
+        where: { identifier: data.corporateEmail }
+      });
+
+      await db.verificationToken.create({
+        data: {
+          identifier: data.corporateEmail,
+          token,
+          expires: new Date(Date.now() + 24 * 3600 * 1000) // 24 hours
+        }
+      });
+      
+      const { sendCorporateVerificationEmail } = await import("@/lib/mail");
+      await sendCorporateVerificationEmail(data.corporateEmail, token);
+    }
 
     revalidatePath("/dashboard/referrer/profile");
     revalidatePath("/dashboard/referrer");

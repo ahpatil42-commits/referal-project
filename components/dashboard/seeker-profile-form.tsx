@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { updateSeekerProfile } from "@/actions/seeker";
 import { toast } from "sonner";
+import { ResumeRoaster } from "./resume-roaster";
 
 const schema = z.object({
   headline:    z.string().max(120).optional(),
@@ -159,51 +160,55 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
     <form onSubmit={useFormReturn.handleSubmit(onSubmit)} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
       {/* AI Resume Upload Zone */}
-      <div
-        style={{
-          border: "2px dashed rgba(99,102,241,0.3)",
-          borderRadius: "8px",
-          padding: "1.5rem",
-          textAlign: "center",
-          background: "rgba(99,102,241,0.05)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "0.5rem",
-        }}
-      >
-        <div style={{ fontSize: "2rem" }}>📄</div>
-        <div>
-          <h4 style={{ color: "var(--color-primary-light)", fontWeight: 600, margin: 0 }}>
-            Auto-fill with AI
-          </h4>
-          <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "0.2rem" }}>
-            Upload your PDF, DOCX, or TXT resume to instantly extract your skills and generate a bio.
-          </p>
-        </div>
-        <label
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem" }}>
+        <div
           style={{
-            cursor: isUploading ? "not-allowed" : "pointer",
-            background: "rgba(255,255,255,0.1)",
-            padding: "0.5rem 1rem",
-            borderRadius: "6px",
-            fontSize: "0.85rem",
-            fontWeight: 500,
-            marginTop: "0.5rem",
-            opacity: isUploading ? 0.7 : 1,
-            transition: "all 0.2s",
+            border: "2px dashed rgba(99,102,241,0.3)",
+            borderRadius: "8px",
+            padding: "1.5rem",
+            textAlign: "center",
+            background: "rgba(99,102,241,0.05)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "0.5rem",
           }}
-          className="hover:bg-white/20"
         >
-          {isUploading ? "Extracting Data..." : "Choose File"}
-          <input
-            type="file"
-            accept=".pdf,.docx,.txt"
-            onChange={handleFileUpload}
-            disabled={isUploading}
-            style={{ display: "none" }}
-          />
-        </label>
+          <div style={{ fontSize: "2rem" }}>📄</div>
+          <div>
+            <h4 style={{ color: "var(--color-primary-light)", fontWeight: 600, margin: 0 }}>
+              Auto-fill with AI
+            </h4>
+            <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: "0.2rem" }}>
+              Upload your PDF, DOCX, or TXT resume to instantly extract your skills and generate a bio.
+            </p>
+          </div>
+          <label
+            style={{
+              cursor: isUploading ? "not-allowed" : "pointer",
+              background: "rgba(255,255,255,0.1)",
+              padding: "0.5rem 1rem",
+              borderRadius: "6px",
+              fontSize: "0.85rem",
+              fontWeight: 500,
+              marginTop: "0.5rem",
+              opacity: isUploading ? 0.7 : 1,
+              transition: "all 0.2s",
+            }}
+            className="hover:bg-white/20"
+          >
+            {isUploading ? "Extracting Data..." : "Choose File"}
+            <input
+              type="file"
+              accept=".pdf,.docx,.txt"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+              style={{ display: "none" }}
+            />
+          </label>
+        </div>
+        
+        <ResumeRoaster />
       </div>
 
       <div>

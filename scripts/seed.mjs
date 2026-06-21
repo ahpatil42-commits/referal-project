@@ -130,6 +130,7 @@ async function main() {
               jobTitle: ref.role,
               bio: ref.bio,
               yearsAtCompany: ref.yearsExperience,
+              isVerified: true,
             }
           }
         }

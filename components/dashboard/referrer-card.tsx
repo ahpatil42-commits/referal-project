@@ -15,6 +15,7 @@ interface ReferrerCardProps {
     bio: string | null;
     yearsAtCompany: number | null;
     maxReferrals: number;
+    isVerified: boolean;
     linkedinUrl: string | null;
     user: { email: string; name: string | null };
     referralPostings?: { id: string; jobTitle: string; company: string; jobUrl: string | null; experience: string | null; skills: string | null; location: string | null }[];
@@ -80,8 +81,15 @@ export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <p style={{ fontWeight: 700, color: "var(--color-text-primary)", fontSize: "0.975rem" }}>
+              <p style={{ fontWeight: 700, color: "var(--color-text-primary)", fontSize: "0.975rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
                 {displayName}
+                {referrer.isVerified && (
+                  <span title="Verified Corporate Email" style={{ color: "#3b82f6", display: "inline-flex", alignItems: "center" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"/>
+                    </svg>
+                  </span>
+                )}
               </p>
               <button 
                 onClick={() => setShowReport(true)}

@@ -85,6 +85,7 @@ model ReferrerProfile {
   bio            String?
   linkedinUrl    String?
   maxReferrals   Int      @default(3)
+  isVerified     Boolean  @default(false)
 
   // ATS Integrations (Phase 2)
   atsProvider    String?  // e.g., "GREENHOUSE", "LEVER"

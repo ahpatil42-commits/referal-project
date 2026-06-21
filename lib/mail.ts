@@ -79,3 +79,24 @@ export async function sendPasswordResetEmail(email: string, token: string) {
     console.log("[RESEND SUCCESS - PASSWORD RESET]:", data);
   }
 }
+
+export async function sendCorporateVerificationEmail(email: string, token: string) {
+  const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify-corporate?token=${token}`;
+  
+  try {
+    await resend?.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: "Verify your Corporate Email on ReferralAI",
+      html: `
+        <h2>Verify Corporate Email</h2>
+        <p>To get the Verified Blue Checkmark on your Referrer Profile, please verify your corporate email by clicking the link below:</p>
+        <p><a href="${verificationLink}">Verify Corporate Email</a></p>
+        <p>If you didn't request this, you can safely ignore this email.</p>
+      `
+    });
+    console.log(`[Mail] Corporate verification email sent to ${email}`);
+  } catch (error) {
+    console.error(`[Mail] Failed to send corporate verification email to ${email}:`, error);
+  }
+}

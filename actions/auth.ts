@@ -91,7 +91,21 @@ export async function registerUser(data: {
     // Send Verification Email
     await sendVerificationEmail(data.email, token);
 
-    return { success: "Account created successfully" };
+    if (data.role === "REFERRER" && data.corporateEmail) {
+      const crypto = await import("crypto");
+      const token = crypto.randomBytes(32).toString("hex");
+      await db.verificationToken.create({
+        data: {
+          identifier: data.corporateEmail,
+          token,
+          expires: new Date(Date.now() + 24 * 3600 * 1000)
+        }
+      });
+      const { sendCorporateVerificationEmail } = await import("@/lib/mail");
+      await sendCorporateVerificationEmail(data.corporateEmail, token);
+    }
+    
+    return { success: "Account created! Please sign in." };
   } catch (error) {
     return { error: "Something went wrong" };
   }
