@@ -1,12 +1,15 @@
 import { getPlatformStats, getRecentUsers } from "@/actions/admin";
+import { getFeedbacks } from "@/actions/admin-feedback";
 import { AdminClient } from "./admin-client";
+import { AdminFeedbackAnalyzer } from "@/components/portal-admin/admin-feedback-analyzer";
 
 export const metadata = { title: "Admin Portal | ReferralAI" };
 
 export default async function AdminPage() {
-  const [stats, users] = await Promise.all([
+  const [stats, users, feedbacks] = await Promise.all([
     getPlatformStats(),
     getRecentUsers(),
+    getFeedbacks(),
   ]);
 
   return (
@@ -44,6 +47,8 @@ export default async function AdminPage() {
         </h2>
         <AdminClient initialUsers={users} />
       </div>
+
+      <AdminFeedbackAnalyzer initialFeedbacks={feedbacks} />
     </div>
   );
 }
