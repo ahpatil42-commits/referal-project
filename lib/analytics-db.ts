@@ -5,7 +5,7 @@ declare global {
   var analyticsPrisma: AnalyticsPrismaClient | undefined;
 }
 
-// Safely instantiate the secondary Prisma client only if the URL is provided
+// Safely instantiate the secondary Prisma client only if the URL is provided 
 export const analyticsDb =
   globalThis.analyticsPrisma ||
   (process.env.ANALYTICS_DATABASE_URL
