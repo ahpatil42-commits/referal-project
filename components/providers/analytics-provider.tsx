@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 interface AnalyticsProviderProps {
   children: React.ReactNode;
@@ -10,7 +10,6 @@ interface AnalyticsProviderProps {
 
 export function AnalyticsProvider({ children, userId }: AnalyticsProviderProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   
   // Ref to track state without triggering re-renders
   const state = useRef({
@@ -103,7 +102,7 @@ export function AnalyticsProvider({ children, userId }: AnalyticsProviderProps) 
        state.current.lastPathname = pathname;
        state.current.lastPathnameTime = Date.now();
     }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   // Handle Visibility Change & Unload (Drop-off tracking)
   useEffect(() => {

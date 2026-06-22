@@ -1,9 +1,11 @@
 import { Resend } from "resend";
 
+import { getBaseUrl } from "./url";
+
 const resendApiKey = process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+const baseUrl = getBaseUrl();
 
 export async function sendVerificationEmail(email: string, token: string) {
   const verifyUrl = `${baseUrl}/verify-email?token=${token}`;

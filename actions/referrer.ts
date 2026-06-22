@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { sendEmailNotification } from "@/lib/email";
 import { z } from "zod";
 import { pusherServer } from "@/lib/pusher";
+import { getBaseUrl } from "@/lib/url";
 
 // ── Profile ──────────────────────────────────────────────────────────────────
 
@@ -142,7 +143,7 @@ export async function updateRequestStatus(
       await sendEmailNotification(
         updated.seeker.user.email,
         `Your referral request was accepted by ${refName}!`,
-        `Good news!\n\n${refName} has accepted your referral request for the ${updated.jobTitle} position at ${updated.company}.\n\nYou can now message them directly in your dashboard.\n\nLog in to ReferralAI to chat: http://localhost:3000/dashboard/seeker/requests`
+        `Good news!\n\n${refName} has accepted your referral request for the ${updated.jobTitle} position at ${updated.company}.\n\nYou can now message them directly in your dashboard.\n\nLog in to ReferralAI to chat: ${getBaseUrl()}/dashboard/seeker/requests`
       );
     }
 

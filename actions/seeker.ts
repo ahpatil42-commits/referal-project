@@ -7,6 +7,7 @@ import { z } from "zod";
 import { sendEmailNotification } from "@/lib/email";
 import { actionRateLimiter } from "@/lib/rate-limit";
 import { pusherServer } from "@/lib/pusher";
+import { getBaseUrl } from "@/lib/url";
 
 // ── Profile ──────────────────────────────────────────────────────────────────
 
@@ -136,8 +137,8 @@ export async function sendReferralRequest(
     if (referrerProfile?.user?.email) {
       await sendEmailNotification(
         referrerProfile.user.email,
-        "New Referral Request 🚀",
-        `You have received a new referral request from ${session.user.name || "a candidate"} for the ${jobTitle} role at ${company}.\n\nLog in to review: http://localhost:3000/dashboard/referrer/requests`
+        `New Referral Request from ${session.user.name || "a candidate"}`,
+        `You have received a new referral request from ${session.user.name || "a candidate"} for the ${jobTitle} role at ${company}.\n\nLog in to review: ${getBaseUrl()}/dashboard/referrer/requests`
       );
     }
 
