@@ -9,6 +9,7 @@ import type { NextAuthConfig } from "next-auth";
 
 export const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(db),
+  trustHost: true,
   session: { 
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60 // 7 days
