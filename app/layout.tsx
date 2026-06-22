@@ -7,6 +7,8 @@ import { auth } from "@/auth";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 
+import { AnalyticsProvider } from "@/components/providers/analytics-provider";
+
 export const metadata: Metadata = {
   title: {
     default: "ReferralAI — Your Referral Network, Supercharged by AI",
@@ -27,11 +29,13 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <AuthProvider session={session}>
-          <RealtimeProvider>
-            {children}
-          </RealtimeProvider>
-        </AuthProvider>
+        <AnalyticsProvider userId={session?.user?.id}>
+          <AuthProvider session={session}>
+            <RealtimeProvider>
+              {children}
+            </RealtimeProvider>
+          </AuthProvider>
+        </AnalyticsProvider>
         <Toaster />
         <Analytics />
       </body>

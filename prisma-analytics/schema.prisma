@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/@prisma/analytics-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("ANALYTICS_DATABASE_URL")
+}
+
+model AnalyticSession {
+  id           String   @id @default(cuid())
+  anonymousId  String   @unique // Cookie-based anonymous ID
+  userId       String?  // Linked to main DB if logged in
+  ipAddress    String?
+  userAgent    String?
+  country      String?
+  startedAt    DateTime @default(now())
+  endedAt      DateTime?
+  totalTimeSpent Int?   // in seconds
+  
+  pageVisits   PageVisit[]
+  interactions Interaction[]
+}
+
+model PageVisit {
+  id         String   @id @default(cuid())
+  sessionId  String
+  session    AnalyticSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  path       String
+  referrer   String?
+  timestamp  DateTime @default(now())
+  timeSpent  Int?     // in seconds
+}
+
+model Interaction {
+  id         String   @id @default(cuid())
+  sessionId  String
+  session    AnalyticSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  eventType  String   // "CLICK", "SCROLL", "CUSTOM"
+  elementId  String?
+  metadata   String?  // JSON stringified payload
+  timestamp  DateTime @default(now())
+}
