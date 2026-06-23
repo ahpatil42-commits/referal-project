@@ -18,7 +18,9 @@ const RegisterSchema = z
       .min(8, { message: "Password must be at least 8 characters" })
       .regex(/[0-9]/, { message: "Password must contain at least 1 number" }),
     countryCode: z.string().optional(),
-    mobile: z.string().optional(),
+    mobile: z.string().optional().refine((val) => !val || /^[0-9]{7,15}$/.test(val), {
+      message: "Mobile number must be between 7 and 15 digits",
+    }),
   });
 
 type RegisterFormValues = z.infer<typeof RegisterSchema>;
@@ -257,7 +259,6 @@ export default function RegisterPage() {
           <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }} />
         </div>
 
-        {/* TEMPORARILY DISABLED FOR VERCEL MVP
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <button onClick={() => signIn("google", { callbackUrl: "/dashboard" })} className="btn-secondary" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -283,7 +284,6 @@ export default function RegisterPage() {
             </button>
           </div>
         </div>
-        */}
 
         {/* Footer */}
         <p

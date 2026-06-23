@@ -33,10 +33,10 @@ export default auth((req) => {
 
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && isLoggedIn) {
-    // TEMPORARY FOR VERCEL DEPLOYMENT: Disable email verification requirement
-    // if (!req.auth?.user?.emailVerified) {
-    //   return NextResponse.redirect(new URL("/pending-verification", nextUrl));
-    // }
+    // Enforce email verification requirement
+    if (!req.auth?.user?.emailVerified) {
+      return NextResponse.redirect(new URL("/pending-verification", nextUrl));
+    }
     if (role === "REFERRER") {
       return NextResponse.redirect(new URL("/dashboard/referrer", nextUrl));
     }
@@ -53,10 +53,10 @@ export default auth((req) => {
 
   // Role-based access control for authenticated users on dashboard routes
   if (isLoggedIn && (isDashboardRoute || nextUrl.pathname.startsWith("/portal-admin"))) {
-    // TEMPORARY FOR VERCEL DEPLOYMENT: Disable email verification requirement
-    // if (!req.auth?.user?.emailVerified) {
-    //   return NextResponse.redirect(new URL("/pending-verification", nextUrl));
-    // }
+    // Enforce email verification requirement
+    if (!req.auth?.user?.emailVerified) {
+      return NextResponse.redirect(new URL("/pending-verification", nextUrl));
+    }
 
     // Redirect generic /dashboard → role-specific dashboard
     if (

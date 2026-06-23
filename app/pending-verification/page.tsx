@@ -10,7 +10,7 @@ export default async function PendingVerificationPage() {
     redirect("/login");
   }
 
-  // @ts-expect-error - emailVerified is manually populated in auth.ts 
+  // emailVerified is manually populated in auth.ts 
   if (session.user.emailVerified) {
     redirect("/dashboard");
   }

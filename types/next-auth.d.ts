@@ -5,6 +5,7 @@ export type UserRole = "SEEKER" | "REFERRER" | "ADMIN";
 export type ExtendedUser = DefaultSession["user"] & {
   id: string;
   role: UserRole;
+  emailVerified?: Date | null;
 };
 
 declare module "next-auth" {
@@ -21,5 +22,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: UserRole;
+    emailVerified?: string | Date | null;
   }
 }

@@ -201,7 +201,6 @@ export default function LoginPage() {
           <div style={{ flex: 1, height: "1px", background: "var(--glass-border)" }} />
         </div>
 
-        {/* TEMPORARILY DISABLED FOR VERCEL MVP
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <button onClick={() => signIn("google", { callbackUrl })} className="btn-secondary" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -227,7 +226,6 @@ export default function LoginPage() {
             </button>
           </div>
         </div>
-        */}
 
         {/* Footer */}
         <p

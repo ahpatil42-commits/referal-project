@@ -208,6 +208,7 @@ export function RequestModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close modal"
             style={{
               background: "none",
               border: "none",
@@ -327,7 +328,7 @@ export function RequestModal({
               </div>
             )}
 
-            <form onSubmit={handleSubmit(startMockInterview)} style={{ display: "flex", flexDirection: "column", gap: "1rem", overflowY: "auto", paddingRight: "0.5rem" }}>
+            <form style={{ display: "flex", flexDirection: "column", gap: "1rem", overflowY: "auto", paddingRight: "0.5rem" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <div>
                   <label className="form-label">Job Title</label>
@@ -378,12 +379,22 @@ export function RequestModal({
                   Cancel
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleSubmit(startMockInterview)}
+                  disabled={isPending || isInterviewing}
+                  className="btn-secondary"
+                  style={{ flex: 1 }}
+                >
+                  Practice Interview 🤖
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit(submitActualRequest)}
                   disabled={isPending || isInterviewing}
                   className="btn-primary"
-                  style={{ flex: 2 }}
+                  style={{ flex: 1.5 }}
                 >
-                  Start Verification 🤖
+                  Send Request 🚀
                 </button>
               </div>
             </form>
