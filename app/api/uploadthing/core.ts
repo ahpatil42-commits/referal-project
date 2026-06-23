@@ -1,6 +1,7 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { auth } from "@/auth";
+import { db } from "@/lib/db";
 
 const f = createUploadthing();
 
@@ -19,8 +20,16 @@ export const ourFileRouter = {
       console.log("[Uploadthing] Resume uploaded by:", metadata.userId);
       console.log("[Uploadthing] File URL:", file.url);
       
-      // Note: We return this metadata to the client. The client will then 
-      // typically call a server action to save the URL to the database.
+      try {
+        await db.seekerProfile.update({
+          where: { userId: metadata.userId },
+          data: { resumeUrl: file.url }
+        });
+        console.log("[Uploadthing] Updated SeekerProfile with resumeUrl");
+      } catch (err) {
+        console.error("[Uploadthing] Failed to update SeekerProfile:", err);
+      }
+      
       return { uploadedBy: metadata.userId, url: file.url };
     }),
 
@@ -30,6 +39,17 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ metadata, file }) => {
       console.log("[Uploadthing] Image uploaded by:", metadata.userId);
       console.log("[Uploadthing] File URL:", file.url);
+
+      try {
+        await db.user.update({
+          where: { id: metadata.userId },
+          data: { image: file.url }
+        });
+        console.log("[Uploadthing] Updated User with image URL");
+      } catch (err) {
+        console.error("[Uploadthing] Failed to update User image:", err);
+      }
+
       return { uploadedBy: metadata.userId, url: file.url };
     }),
 

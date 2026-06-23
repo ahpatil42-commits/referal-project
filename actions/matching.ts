@@ -8,10 +8,16 @@ interface SeekerData {
 }
 
 interface ReferrerData {
+  id?: string;
   company: string | null;
   jobTitle: string | null;
   bio: string | null;
 }
+
+// Simple in-memory cache to prevent Gemini API rate limiting
+// Keys: `${seeker.userId || seeker.id}-${referrer.id}`
+const matchScoreCache = new Map<string, { score: number; expires: number }>();
+const CACHE_TTL = 1000 * 60 * 60; // 1 hour
 
 /**
  * Calculates an "AI Match Score" (0-100) using Ollama to predict compatibility.
@@ -20,6 +26,16 @@ interface ReferrerData {
 export async function calculateMatchScore(seeker: SeekerData | null, referrer: ReferrerData): Promise<number> {
   if (!seeker) return 0;
   
+  // Try Cache First
+  const seekerIdentifier = (seeker as any).userId || (seeker as any).id || "unknown";
+  const referrerIdentifier = referrer.id || "unknown";
+  const cacheKey = `${seekerIdentifier}-${referrerIdentifier}`;
+  
+  const cached = matchScoreCache.get(cacheKey);
+  if (cached && cached.expires > Date.now()) {
+    return cached.score;
+  }
+
   // 1. Calculate a Fallback Score (Keyword Match)
   let fallbackScore = 30; 
   let keywords: string[] = [];
@@ -91,15 +107,18 @@ export async function calculateMatchScore(seeker: SeekerData | null, referrer: R
     if (match) {
       const parsedScore = parseInt(match[0], 10);
       if (parsedScore >= 0 && parsedScore <= 100) {
+        matchScoreCache.set(cacheKey, { score: parsedScore, expires: Date.now() + CACHE_TTL });
         return parsedScore;
       }
     }
     
+    matchScoreCache.set(cacheKey, { score: fallbackScore, expires: Date.now() + CACHE_TTL });
     return fallbackScore;
 
   } catch (error) {
-    // If Ollama is unavailable, offline, or timed out
+    // If Gemini is unavailable, offline, or timed out
     // Silently fallback so the UI remains usable
+    matchScoreCache.set(cacheKey, { score: fallbackScore, expires: Date.now() + CACHE_TTL });
     return fallbackScore;
   }
 }
