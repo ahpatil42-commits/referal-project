@@ -7,6 +7,7 @@ import { sendEmailNotification } from "@/lib/email";
 import { z } from "zod";
 import { pusherServer } from "@/lib/pusher";
 import { getBaseUrl } from "@/lib/url";
+import { actionRateLimiter } from "@/lib/rate-limit";
 
 // ── Profile ──────────────────────────────────────────────────────────────────
 
@@ -28,6 +29,9 @@ export async function updateReferrerProfile(
   const session = await auth();
   if (!session?.user?.id) return { error: "Not authenticated." };
   if (session.user.role !== "REFERRER") return { error: "Unauthorized access." };
+
+  const rateLimit = actionRateLimiter.check(session.user.id);
+  if (!rateLimit.success) return { error: "Too many requests. Please wait a minute." };
 
   const validated = ReferrerProfileSchema.safeParse(values);
   if (!validated.success) return { error: "Invalid data." };
@@ -111,6 +115,9 @@ export async function updateRequestStatus(
   const session = await auth();
   if (!session?.user?.id) return { error: "Not authenticated." };
   if (session.user.role !== "REFERRER") return { error: "Only referrers can update request status." };
+
+  const rateLimit = actionRateLimiter.check(session.user.id);
+  if (!rateLimit.success) return { error: "Too many requests. Please wait a minute." };
 
   const validated = UpdateStatusSchema.safeParse(values);
   if (!validated.success) return { error: "Invalid data." };

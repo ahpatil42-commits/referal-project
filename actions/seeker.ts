@@ -31,6 +31,9 @@ export async function updateSeekerProfile(
   if (!session?.user?.id) return { error: "Not authenticated." };
   if (session.user.role !== "SEEKER") return { error: "Unauthorized access." };
 
+  const rateLimit = actionRateLimiter.check(session.user.id);
+  if (!rateLimit.success) return { error: "Too many requests. Please wait a minute." };
+
   const validated = SeekerProfileSchema.safeParse(values);
   if (!validated.success) return { error: "Invalid data." };
 
@@ -106,6 +109,29 @@ export async function sendReferralRequest(
   });
   if (!seekerProfile) return { error: "Please complete your profile first." };
 
+  // Fetch referrer profile to check quota
+  const referrerProfile = await db.referrerProfile.findUnique({
+    where: { id: referrerId },
+    include: { user: true }
+  });
+  if (!referrerProfile) return { error: "Referrer not found." };
+
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const acceptedRequestsCount = await db.referralRequest.count({
+    where: {
+      referrerId: referrerId,
+      status: "ACCEPTED",
+      createdAt: { gte: startOfMonth },
+    },
+  });
+
+  if (acceptedRequestsCount >= referrerProfile.maxReferrals) {
+    return { error: "This referrer has reached their referral limit for the month." };
+  }
+
   // Prevent duplicate pending requests to the same referrer
   const existing = await db.referralRequest.findFirst({
     where: {
@@ -127,11 +153,6 @@ export async function sendReferralRequest(
         coverNote,
         status:    "PENDING",
       },
-    });
-
-    const referrerProfile = await db.referrerProfile.findUnique({
-      where: { id: referrerId },
-      include: { user: true }
     });
 
     if (referrerProfile?.user?.email) {
