@@ -3,11 +3,31 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 
-export async function createReferralPosting(data: { jobTitle: string; company: string; jobUrl?: string; description?: string; experience?: string; skills?: string; location?: string; noticePeriod?: string }) {
+const PostingSchema = z.object({
+  jobTitle:     z.string().min(2, "Job title required").max(100),
+  company:      z.string().min(2, "Company required").max(100),
+  jobUrl:       z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  description:  z.string().max(2000).optional(),
+  experience:   z.string().max(200).optional(),
+  skills:       z.string().max(500).optional(),
+  location:     z.string().max(200).optional(),
+  noticePeriod: z.string().max(100).optional(),
+});
+
+export async function createReferralPosting(data: z.infer<typeof PostingSchema>) {
   try {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
+    if (session.user.role !== "REFERRER") return { error: "Only referrers can create postings." };
+
+    const validated = PostingSchema.safeParse(data);
+    if (!validated.success) {
+      return { error: validated.error.errors[0]?.message ?? "Invalid posting data." };
+    }
+
+    const { jobTitle, company, jobUrl, description, experience, skills, location, noticePeriod } = validated.data;
 
     let referrer = await db.referrerProfile.findUnique({
       where: { userId: session.user.id },
@@ -22,14 +42,14 @@ export async function createReferralPosting(data: { jobTitle: string; company: s
     await db.referralPosting.create({
       data: {
         referrerId: referrer.id,
-        jobTitle: data.jobTitle,
-        company: data.company,
-        jobUrl: data.jobUrl || null,
-        description: data.description || null,
-        experience: data.experience || null,
-        skills: data.skills || null,
-        location: data.location || null,
-        noticePeriod: data.noticePeriod || null,
+        jobTitle,
+        company,
+        jobUrl:      jobUrl      || null,
+        description: description || null,
+        experience:  experience  || null,
+        skills:      skills      || null,
+        location:    location    || null,
+        noticePeriod: noticePeriod || null,
         isActive: true,
       },
     });
@@ -77,7 +97,7 @@ export async function togglePostingStatus(postingId: string, isActive: boolean) 
   }
 }
 
-export async function deletePosting(postingId: string) {
+export async function deactivatePosting(postingId: string) {
   try {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };

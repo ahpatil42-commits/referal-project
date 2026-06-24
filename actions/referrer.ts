@@ -8,6 +8,7 @@ import { z } from "zod";
 import { pusherServer } from "@/lib/pusher";
 import { getBaseUrl } from "@/lib/url";
 import { actionRateLimiter } from "@/lib/rate-limit";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 // ── Profile ──────────────────────────────────────────────────────────────────
 
@@ -179,5 +180,76 @@ export async function updateRequestStatus(
   } catch (err) {
     console.error("[UPDATE_REQUEST_STATUS]", err);
     return { error: "Failed to update request." };
+  }
+}
+
+// ── ATS Integration (Phase 2) ─────────────────────────────────────────────────
+
+const AtsConfigSchema = z.object({
+  atsProvider: z.enum(["GREENHOUSE", "LEVER"]).optional(),
+  atsApiKey:   z.string().max(512).optional().or(z.literal("")),
+});
+
+/**
+ * Saves ATS credentials. The API key is encrypted at rest using AES-256-GCM
+ * (lib/encryption.ts). Never store raw keys — always decrypt server-side before use.
+ */
+export async function updateAtsConfig(
+  values: z.infer<typeof AtsConfigSchema>
+): Promise<{ error?: string; success?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not authenticated." };
+  if (session.user.role !== "REFERRER") return { error: "Unauthorized access." };
+
+  const rateLimit = await actionRateLimiter.check(session.user.id);
+  if (!rateLimit.success) return { error: "Too many requests. Please wait a minute." };
+
+  const validated = AtsConfigSchema.safeParse(values);
+  if (!validated.success) return { error: "Invalid data." };
+
+  const { atsProvider, atsApiKey } = validated.data;
+
+  try {
+    await db.referrerProfile.upsert({
+      where:  { userId: session.user.id },
+      update: {
+        atsProvider: atsProvider || null,
+        // Encrypt the key before storing. Empty string clears it.
+        atsApiKey:   atsApiKey ? encrypt(atsApiKey) : null,
+      },
+      create: {
+        userId:      session.user.id,
+        atsProvider: atsProvider || null,
+        atsApiKey:   atsApiKey ? encrypt(atsApiKey) : null,
+      },
+    });
+
+    revalidatePath("/dashboard/referrer/profile");
+    return { success: "ATS configuration saved securely." };
+  } catch (err) {
+    console.error("[UPDATE_ATS_CONFIG]", err);
+    return { error: "Failed to save ATS configuration." };
+  }
+}
+
+/**
+ * Retrieves and decrypts the ATS API key for server-side use only.
+ * Never expose the decrypted key to the client.
+ */
+export async function getDecryptedAtsKey(
+  referrerProfileId: string
+): Promise<string | null> {
+  const profile = await db.referrerProfile.findUnique({
+    where: { id: referrerProfileId },
+    select: { atsApiKey: true },
+  });
+
+  if (!profile?.atsApiKey) return null;
+
+  try {
+    return decrypt(profile.atsApiKey);
+  } catch {
+    console.error("[ATS] Failed to decrypt API key for profile:", referrerProfileId);
+    return null;
   }
 }

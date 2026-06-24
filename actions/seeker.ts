@@ -1,6 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -14,12 +15,12 @@ import { getBaseUrl } from "@/lib/url";
 const SeekerProfileSchema = z.object({
   headline:    z.string().max(120).optional(),
   bio:         z.string().max(800).optional(),
-  skills:      z.string().optional(), // JSON string
+  skills:      z.array(z.string()).optional(),
   resumeUrl:   z.string().url().optional().or(z.literal("")),
   resumeStoragePath: z.string().optional(),
   linkedinUrl: z.string().url().optional().or(z.literal("")),
   githubUrl:   z.string().url().optional().or(z.literal("")),
-  targetRoles: z.string().optional(), // JSON string
+  targetRoles: z.array(z.string()).optional(),
 });
 
 export type SeekerProfileValues = z.infer<typeof SeekerProfileSchema>;
@@ -45,23 +46,23 @@ export async function updateSeekerProfile(
       update: {
         headline:    data.headline    || null,
         bio:         data.bio         || null,
-        skills:      data.skills      || null,
+        skills:      data.skills      ?? Prisma.DbNull,
         resumeUrl:   data.resumeUrl   || null,
         resumeStoragePath: data.resumeStoragePath || null,
         linkedinUrl: data.linkedinUrl || null,
         githubUrl:   data.githubUrl   || null,
-        targetRoles: data.targetRoles || null,
+        targetRoles: data.targetRoles ?? Prisma.DbNull,
       },
       create: {
         userId:      session.user.id,
         headline:    data.headline    || null,
         bio:         data.bio         || null,
-        skills:      data.skills      || null,
+        skills:      data.skills      ?? Prisma.DbNull,
         resumeUrl:   data.resumeUrl   || null,
         resumeStoragePath: data.resumeStoragePath || null,
         linkedinUrl: data.linkedinUrl || null,
         githubUrl:   data.githubUrl   || null,
-        targetRoles: data.targetRoles || null,
+        targetRoles: data.targetRoles ?? Prisma.DbNull,
       },
     });
 
@@ -130,6 +131,18 @@ export async function sendReferralRequest(
 
   if (acceptedRequestsCount >= referrerProfile.maxReferrals) {
     return { error: "This referrer has reached their referral limit for the month." };
+  }
+
+  // Also prevent inbox flooding — cap total PENDING requests at 3x the referrer's maxReferrals
+  const pendingRequestsCount = await db.referralRequest.count({
+    where: {
+      referrerId,
+      status: "PENDING",
+    },
+  });
+
+  if (pendingRequestsCount >= referrerProfile.maxReferrals * 3) {
+    return { error: "This referrer's inbox is full right now. Please try again later." };
   }
 
   // Prevent duplicate pending requests to the same referrer

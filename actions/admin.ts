@@ -40,6 +40,8 @@ export async function getPlatformStats() {
     ? Math.round((acceptedRequests / totalRequests) * 100) 
     : 0;
 
+  const proPriceUsd = parseInt(process.env.STRIPE_PRO_PRICE || "19", 10);
+
   return {
     totalUsers,
     totalSeekers,
@@ -47,7 +49,7 @@ export async function getPlatformStats() {
     totalRequests,
     acceptanceRate,
     proUsers,
-    mrr: proUsers * 19,
+    mrr: proUsers * proPriceUsd,
   };
 }
 

@@ -80,6 +80,11 @@ export async function registerUser(data: {
     // Generate 6-digit OTPs
     const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
     
+    // Clear any existing OTPs for this email before creating a new one
+    await db.verificationOTP.deleteMany({
+      where: { identifier: data.email }
+    });
+
     await db.verificationOTP.create({
       data: {
         identifier: data.email,
@@ -93,6 +98,10 @@ export async function registerUser(data: {
     let mobileOtp: string | undefined;
     if (data.mobile) {
       mobileOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      // Clear any existing OTPs for this mobile before creating a new one
+      await db.verificationOTP.deleteMany({
+        where: { identifier: data.mobile }
+      });
       await db.verificationOTP.create({
         data: {
           identifier: data.mobile,

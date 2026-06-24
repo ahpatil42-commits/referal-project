@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { authRateLimiter } from "@/lib/rate-limit";
 
 const VerifySchema = z.object({
   email: z.string().email(),
@@ -20,6 +21,12 @@ export async function verifyOTP(data: {
     const parsed = VerifySchema.safeParse(data);
     if (!parsed.success) {
       return { error: "Invalid data provided" };
+    }
+
+    // Rate-limit OTP verification attempts per email
+    const rateLimit = await authRateLimiter.check(`otp-verify:${data.email}`);
+    if (!rateLimit.success) {
+      return { error: "Too many verification attempts. Please wait before trying again." };
     }
 
     const user = await db.user.findUnique({

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { apiRateLimiter } from "@/lib/rate-limit-edge";
 
-export default auth((req) => {
+export default auth(async (req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
   const role: string | undefined = req.auth?.user?.role;
@@ -18,7 +18,7 @@ export default auth((req) => {
   // Rate Limiting for API routes (excluding auth and webhooks)
   if (isApiRoute && !nextUrl.pathname.startsWith("/api/auth") && !nextUrl.pathname.startsWith("/api/webhooks")) {
     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
-    const { success, limit, remaining } = apiRateLimiter.check(ip);
+    const { success, limit, remaining } = await apiRateLimiter.check(ip);
     
     if (!success) {
       return new NextResponse("Too Many Requests", {

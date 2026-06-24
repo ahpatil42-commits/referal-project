@@ -53,9 +53,7 @@ export default async function ReferrerReferralsPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {referrals.map((ref) => {
             const seekerName = ref.seeker.user.name || ref.seeker.user.email.split("@")[0];
-            const skills: string[] = (() => {
-              try { return ref.seeker.skills ? JSON.parse(ref.seeker.skills) : []; } catch { return []; }
-            })();
+            const skills = (Array.isArray(ref.seeker.skills) ? ref.seeker.skills : []) as string[];
             return (
               <div key={ref.id} className="glass-panel" style={{ padding: "1.25rem 1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap", marginBottom: "0.875rem" }}>

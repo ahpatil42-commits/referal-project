@@ -1,8 +1,8 @@
 "use server";
 
 interface SeekerData {
-  skills: string | null;       
-  targetRoles: string | null;  
+  skills: any;       
+  targetRoles: any;  
   headline: string | null;
   bio: string | null;
 }
@@ -44,8 +44,8 @@ export async function calculateMatchScore(seeker: SeekerData | null, referrer: R
   let fallbackScore = 30; 
   let keywords: string[] = [];
   try {
-    const skills = seeker.skills ? JSON.parse(seeker.skills) : [];
-    const roles = seeker.targetRoles ? JSON.parse(seeker.targetRoles) : [];
+    const skills = Array.isArray(seeker.skills) ? seeker.skills : [];
+    const roles = Array.isArray(seeker.targetRoles) ? seeker.targetRoles : [];
     keywords = [...skills, ...roles];
   } catch (e) {}
 
@@ -69,8 +69,7 @@ export async function calculateMatchScore(seeker: SeekerData | null, referrer: R
   }
   
   fallbackScore += Math.min(70, matches * 15);
-  const variance = Math.floor(Math.random() * 11) - 5;
-  fallbackScore = Math.min(99, Math.max(10, fallbackScore + variance));
+  fallbackScore = Math.min(99, Math.max(10, fallbackScore));
 
   // 2. GEMINI AI Prediction
   const prompt = `
@@ -82,8 +81,8 @@ export async function calculateMatchScore(seeker: SeekerData | null, referrer: R
     Seeker Resume Details:
     Headline: ${seeker.headline || "N/A"}
     Bio: ${seeker.bio || "N/A"}
-    Skills: ${seeker.skills || "N/A"}
-    Target Roles: ${seeker.targetRoles || "N/A"}
+    Skills: ${Array.isArray(seeker.skills) ? seeker.skills.join(", ") : "N/A"}
+    Target Roles: ${Array.isArray(seeker.targetRoles) ? seeker.targetRoles.join(", ") : "N/A"}
 
     Referrer Job Profile:
     Company: ${referrer.company || "N/A"}

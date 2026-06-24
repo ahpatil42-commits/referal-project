@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const rateLimit = apiRateLimiter.check(session.user.id!);
+    const rateLimit = await apiRateLimiter.check(session.user.id!);
     if (!rateLimit.success) {
       return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
     }
@@ -60,8 +60,8 @@ export async function POST(request: Request) {
       return NextResponse.json({
         headline: "Software Professional",
         bio: "Experienced professional looking for new opportunities.",
-        skills: JSON.stringify(["React", "Node.js", "TypeScript"]),
-        targetRoles: JSON.stringify(["Software Engineer"]),
+        skills: ["React", "Node.js", "TypeScript"],
+        targetRoles: ["Software Engineer"],
         resumeUrl: fileUrl,
         resumeStoragePath: fileUrl
       });
@@ -105,8 +105,8 @@ ${text.substring(0, 15000)}
     return NextResponse.json({
       headline: parsedData.headline || "Professional",
       bio: parsedData.bio || "",
-      skills: JSON.stringify(parsedData.skills || []),
-      targetRoles: JSON.stringify(parsedData.targetRoles || []),
+      skills: parsedData.skills || [],
+      targetRoles: parsedData.targetRoles || [],
       linkedinUrl: parsedData.linkedinUrl || "",
       githubUrl: parsedData.githubUrl || "",
       resumeUrl: fileUrl,

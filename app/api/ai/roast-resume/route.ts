@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const rateLimit = apiRateLimiter.check(session.user.id!);
+    const rateLimit = await apiRateLimiter.check(session.user.id!);
     if (!rateLimit.success) {
       return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 });
     }

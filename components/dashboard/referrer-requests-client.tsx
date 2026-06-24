@@ -24,7 +24,7 @@ interface Request {
   seeker: {
     headline: string | null;
     linkedinUrl: string | null;
-    skills: string | null;
+    skills: any;
     resumeStoragePath: string | null;
     user: { email: string; name: string | null };
   };
@@ -44,9 +44,7 @@ function RequestCard({ req, onUpdate, currentUserId }: { req: Request; onUpdate:
   const [localStatus, setLocalStatus] = useState(req.status);
 
   const seekerName = req.seeker.user.name || req.seeker.user.email.split("@")[0];
-  const skills: string[] = (() => {
-    try { return req.seeker.skills ? JSON.parse(req.seeker.skills) : []; } catch { return []; }
-  })();
+  const skills: string[] = Array.isArray(req.seeker.skills) ? req.seeker.skills : [];
 
   const handleAction = (status: "ACCEPTED" | "REJECTED" | "IGNORED") => {
     startTransition(async () => {

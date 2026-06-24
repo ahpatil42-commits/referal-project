@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { sendOTPEmail } from "@/lib/mail";
 import { sendSMSOTP } from "@/lib/sms";
+import { authRateLimiter } from "@/lib/rate-limit";
 
 export async function updateMobileNumber(mobile: string) {
   const session = await auth();
@@ -32,6 +33,9 @@ export async function updateMobileNumber(mobile: string) {
 export async function sendVerificationOtp(type: "email" | "mobile") {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not authenticated" };
+
+  const rateLimit = await authRateLimiter.check(`otp-send:${session.user.id}`);
+  if (!rateLimit.success) return { error: "Too many requests. Please wait before requesting another code." };
 
   try {
     const user = await db.user.findUnique({ where: { id: session.user.id } });
@@ -67,6 +71,9 @@ export async function sendVerificationOtp(type: "email" | "mobile") {
 export async function verifyOtp(type: "email" | "mobile", otp: string) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not authenticated" };
+
+  const rateLimit = await authRateLimiter.check(`otp-verify:${session.user.id}`);
+  if (!rateLimit.success) return { error: "Too many attempts. Please wait before trying again." };
 
   try {
     const user = await db.user.findUnique({ where: { id: session.user.id } });

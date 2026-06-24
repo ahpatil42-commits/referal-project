@@ -21,8 +21,8 @@ export async function getMatchExplanation(referrerId: string) {
       Seeker Profile:
       Headline: ${seeker.headline || "N/A"}
       Bio: ${seeker.bio || "N/A"}
-      Skills: ${seeker.skills || "N/A"}
-      Target Roles: ${seeker.targetRoles || "N/A"}
+      Skills: ${Array.isArray(seeker.skills) ? seeker.skills.join(", ") : "N/A"}
+      Target Roles: ${Array.isArray(seeker.targetRoles) ? seeker.targetRoles.join(", ") : "N/A"}
 
       Referrer Profile:
       Company: ${referrer.company || "N/A"}

@@ -24,7 +24,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 interface SeekerProfileFormProps {
-  initialData: Partial<FormValues & { skills: string | null; targetRoles: string | null; image?: string | null }>;
+  initialData: Partial<FormValues & { skills: any; targetRoles: any; image?: string | null }>;
 }
 
 export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
@@ -33,10 +33,14 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(initialData.image || null);
 
-  // skills/targetRoles stored as JSON string array, display as comma-separated
-  const parseList = (val: string | null | undefined) => {
+  // skills/targetRoles stored as JSON arrays, display as comma-separated
+  const parseList = (val: any) => {
     if (!val) return "";
-    try { return JSON.parse(val).join(", "); } catch { return val; }
+    if (Array.isArray(val)) return val.join(", ");
+    if (typeof val === "string") {
+      try { return JSON.parse(val).join(", "); } catch { return val; }
+    }
+    return "";
   };
 
   const useFormReturn = useForm<FormValues>({
@@ -103,14 +107,14 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
 
   const onSubmit = (data: FormValues) => {
     // Serialize comma lists → JSON arrays
-    const toJson = (s: string | undefined) =>
-      s ? JSON.stringify(s.split(",").map((x) => x.trim()).filter(Boolean)) : undefined;
+    const toArray = (s: string | undefined) =>
+      s ? s.split(",").map((x) => x.trim()).filter(Boolean) : undefined;
 
     startTransition(async () => {
       const res = await updateSeekerProfile({
         ...data,
-        skills:      toJson(data.skills),
-        targetRoles: toJson(data.targetRoles),
+        skills:      toArray(data.skills),
+        targetRoles: toArray(data.targetRoles),
       });
       if (res.error)   toast.error(res.error);
       if (res.success) toast.success(res.success);

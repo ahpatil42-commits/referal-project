@@ -66,7 +66,6 @@ export const authConfig: NextAuthConfig = {
           isAdmin: user.isAdmin,
           emailVerified: user.emailVerified,
         };
-        console.log("[Auth] Authorize returned:", sessionUser);
         return sessionUser;
       },
     }),
@@ -84,16 +83,30 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, account, trigger, session }) {
       // `user` is only populated on initial sign-in
       if (user) {
-        console.log("[Auth] JWT callback received user:", user);
         token.id = user.id as string;
         token.role = (user as any).role || "SEEKER"; // Default role for OAuth signups
         token.isAdmin = (user as any).isAdmin || false;
-        token.emailVerified = (user as any).emailVerified || null;
+
+        // For OAuth providers, trust the provider-verified email.
+        // Fetch from DB to get the canonical emailVerified value set by the PrismaAdapter.
+        if (account && account.provider !== "credentials") {
+          try {
+            const dbUser = await db.user.findUnique({
+              where: { id: user.id as string },
+              select: { emailVerified: true },
+            });
+            token.emailVerified = dbUser?.emailVerified ?? new Date();
+          } catch {
+            // Fallback: trust the provider if DB lookup fails
+            token.emailVerified = new Date();
+          }
+        } else {
+          token.emailVerified = (user as any).emailVerified || null;
+        }
       }
-      console.log("[Auth] JWT returning token:", token);
       if (trigger === "update" && session?.role) {
         token.role = session.role;
       }
@@ -107,7 +120,6 @@ export const authConfig: NextAuthConfig = {
         session.user.isAdmin = token.isAdmin as boolean;
         session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
       }
-      console.log("[Auth] Session returning:", session);
       return session;
     },
   },

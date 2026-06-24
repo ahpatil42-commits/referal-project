@@ -67,12 +67,12 @@ model SeekerProfile {
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   headline       String?
   bio            String?
-  skills         String?  // JSON-encoded string[]
+  skills         Json?    // Array of strings
   resumeUrl      String?
   resumeStoragePath String? // Local filesystem path to the uploaded PDF
   linkedinUrl    String?
   githubUrl      String?
-  targetRoles    String?  // JSON-encoded string[]
+  targetRoles    Json?    // Array of strings
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

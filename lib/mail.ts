@@ -137,3 +137,46 @@ export async function sendCorporateVerificationEmail(email: string, token: strin
     console.error(`[Mail] Failed to send corporate verification email to ${email}:`, error);
   }
 }
+
+/**
+ * Sends a rich HTML notification email (e.g. referral accepted, new request).
+ * Falls back gracefully when RESEND_API_KEY is not set.
+ */
+export async function sendEmailNotification(to: string, subject: string, text: string) {
+  if (!resend) {
+    console.warn("[Mail] RESEND_API_KEY not set. Skipping notification email.");
+    return;
+  }
+
+  const html = `
+    <div style="font-family: sans-serif; background:#0B0B14; padding: 40px 0;">
+      <div style="margin: 0 auto; padding: 20px; background: #11111A; border: 1px solid #1F1F2E; border-radius: 12px; max-width: 600px;">
+        <div style="text-align: center; padding-bottom: 20px; border-bottom: 1px solid #1F1F2E;">
+          <p style="font-size: 24px; font-weight: bold; color: #ffffff; margin: 0;">ReferralAI</p>
+        </div>
+        <div style="padding: 20px 0;">
+          <p style="font-size: 20px; font-weight: bold; color: #ffffff; margin-bottom: 16px;">${subject}</p>
+          <p style="font-size: 16px; line-height: 24px; color: #A0AEC0; white-space: pre-wrap;">${text}</p>
+        </div>
+        <div style="text-align: center; padding-top: 20px;">
+          <a href="${baseUrl}/dashboard"
+             style="background-color: #6366f1; color: #ffffff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+            Go to Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+  `;
+
+  try {
+    await resend.emails.send({
+      from: fromEmail,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (error) {
+    console.error("[Mail] Failed to send notification email:", error);
+  }
+}

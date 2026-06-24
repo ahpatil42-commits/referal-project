@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PostingModal } from "./posting-modal";
-import { togglePostingStatus, deletePosting } from "@/actions/posting";
+import { togglePostingStatus, deactivatePosting } from "@/actions/posting";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -33,7 +33,7 @@ export function ReferrerPostingsList({ postings, defaultCompany }: { postings: R
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this role?")) return;
     setLoadingId(id);
-    const res = await deletePosting(id);
+    const res = await deactivatePosting(id);
     if (res.error) toast.error(res.error);
     if (res.success) toast.success(res.success);
     setLoadingId(null);
