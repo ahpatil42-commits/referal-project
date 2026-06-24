@@ -58,7 +58,7 @@ export function ResumeRoaster() {
       }}
     >
       <div style={{ fontSize: "2rem" }}>🔥</div>
-      <div style={{ flex: 1 }}>
+      <div>
         <h4 style={{ color: "#ef4444", fontWeight: 600, margin: 0 }}>
           AI Resume Roaster
         </h4>
@@ -76,7 +76,7 @@ export function ResumeRoaster() {
           borderRadius: "6px",
           fontSize: "0.85rem",
           fontWeight: 600,
-          marginTop: "0.5rem",
+          marginTop: "auto",
           opacity: isRoasting ? 0.7 : 1,
           transition: "all 0.2s",
           border: "1px solid rgba(239, 68, 68, 0.3)",

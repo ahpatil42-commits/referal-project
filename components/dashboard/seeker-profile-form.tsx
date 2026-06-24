@@ -166,7 +166,7 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
           }}
         >
           <div style={{ fontSize: "2rem" }}>📄</div>
-          <div style={{ flex: 1 }}>
+          <div>
             <h4 style={{ color: "var(--color-primary-light)", fontWeight: 600, margin: 0 }}>
               Auto-fill with AI
             </h4>
@@ -174,8 +174,8 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
               Upload your PDF, DOCX, or TXT resume to instantly extract your skills and generate a bio.
             </p>
           </div>
-          <div style={{ pointerEvents: isUploading ? "none" : "auto", opacity: isUploading ? 0.7 : 1, width: "100%", marginTop: "1rem" }}>
-            <UploadDropzone
+          <div style={{ pointerEvents: isUploading ? "none" : "auto", opacity: isUploading ? 0.7 : 1, width: "100%", marginTop: "auto" }}>
+            <UploadButton
               endpoint="resumeUploader"
               onClientUploadComplete={(res) => {
                 if (res?.[0]) handleResumeUploadComplete(res[0].url);
