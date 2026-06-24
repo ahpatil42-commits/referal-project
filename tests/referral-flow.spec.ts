@@ -10,7 +10,7 @@ test.describe('Auth Guards & Middleware', () => {
   test('Homepage loads with marketing content', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/ReferralAI/);
-    await expect(page.locator('text=ReferralAI')).toBeVisible();
+    await expect(page.locator('text=ReferralAI').first()).toBeVisible();
   });
 
   test('Unauthenticated access to seeker dashboard redirects to login', async ({ page }) => {
