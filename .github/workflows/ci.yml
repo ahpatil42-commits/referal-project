@@ -79,7 +79,9 @@ jobs:
       - name: Generate Prisma clients and push schema
         run: |
           npx prisma generate
+          npx prisma generate --schema=prisma-analytics/schema.prisma
           npx prisma db push --skip-generate
+          npx prisma db push --schema=prisma-analytics/schema.prisma --skip-generate
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/referralai_test
 

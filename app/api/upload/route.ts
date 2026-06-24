@@ -60,6 +60,11 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
+    console.error("Vercel Blob Upload Error:", error);
+    if (error instanceof Error) {
+      console.error("Error Message:", error.message);
+      console.error("Error Stack:", error.stack);
+    }
     return NextResponse.json(
       { error: (error as Error).message },
       { status: 400 },
