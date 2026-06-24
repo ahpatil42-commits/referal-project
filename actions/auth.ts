@@ -64,6 +64,7 @@ export async function registerUser(data: {
         name: data.email.split("@")[0],
         role: data.role,
         mobile: data.mobile,
+        emailVerified: new Date(), // Temporarily bypass email verification
         termsAcceptedAt: new Date(),
         ...(data.role === "REFERRER" && data.corporateEmail
           ? {
@@ -77,23 +78,23 @@ export async function registerUser(data: {
       },
     });
 
-    // Generate 6-digit OTPs
-    const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    // [TEMPORARILY DISABLED] Generate 6-digit OTPs
+    // const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // Clear any existing OTPs for this email before creating a new one
-    await db.verificationOTP.deleteMany({
-      where: { identifier: data.email }
-    });
+    // // Clear any existing OTPs for this email before creating a new one
+    // await db.verificationOTP.deleteMany({
+    //   where: { identifier: data.email }
+    // });
 
-    await db.verificationOTP.create({
-      data: {
-        identifier: data.email,
-        otp: emailOtp,
-        expires: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
-      }
-    });
+    // await db.verificationOTP.create({
+    //   data: {
+    //     identifier: data.email,
+    //     otp: emailOtp,
+    //     expires: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
+    //   }
+    // });
 
-    await sendOTPEmail(data.email, emailOtp);
+    // await sendOTPEmail(data.email, emailOtp);
 
     let mobileOtp: string | undefined;
     if (data.mobile) {
@@ -125,10 +126,17 @@ export async function registerUser(data: {
       await sendCorporateVerificationEmail(data.corporateEmail, token);
     }
     
-    // Redirect to the OTP verification page
-    return { 
-      success: "Account created! Please verify your OTPs.", 
-      redirect: `/verify-otp?email=${encodeURIComponent(data.email)}${data.mobile ? `&mobile=${encodeURIComponent(data.mobile)}` : ''}`
+    // Redirect to the OTP verification page if mobile provided, else login
+    if (data.mobile) {
+      return { 
+        success: "Account created! Please verify your mobile OTP.", 
+        redirect: `/verify-otp?mobile=${encodeURIComponent(data.mobile)}`
+      };
+    }
+
+    return {
+      success: "Account created! You can now log in.",
+      redirect: "/login"
     };
   } catch (error) {
     return { error: "Something went wrong" };
