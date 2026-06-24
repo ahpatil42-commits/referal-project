@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { db } from "@/lib/db";
 import { DashboardLayoutClient } from "@/components/dashboard/dashboard-layout-client";
+import { TermsPopup } from "@/components/dashboard/terms-popup";
 
 export default async function DashboardLayout({
   children,
@@ -17,7 +18,7 @@ export default async function DashboardLayout({
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { image: true, emailVerified: true }
+    select: { image: true, emailVerified: true, termsAcceptedAt: true }
   });
 
   if (!user?.emailVerified) {
@@ -25,8 +26,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <DashboardLayoutClient sidebar={<Sidebar role={session.user.role} email={session.user.email ?? ""} image={user?.image ?? null} />}>
-      {children}
-    </DashboardLayoutClient>
+    <>
+      {!user?.termsAcceptedAt && <TermsPopup />}
+      <DashboardLayoutClient sidebar={<Sidebar role={session.user.role} email={session.user.email ?? ""} image={user?.image ?? null} />}>
+        {children}
+      </DashboardLayoutClient>
+    </>
   );
 }

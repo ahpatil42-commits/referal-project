@@ -46,3 +46,19 @@ export async function switchUserRole(newRole: "SEEKER" | "REFERRER") {
     return { error: "Failed to switch role." };
   }
 }
+
+export async function acceptTermsOfService() {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not authenticated" };
+
+  try {
+    await db.user.update({
+      where: { id: session.user.id },
+      data: { termsAcceptedAt: new Date() }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("[ACCEPT_TERMS]", error);
+    return { error: "Failed to accept terms." };
+  }
+}

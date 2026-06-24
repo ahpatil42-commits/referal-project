@@ -64,6 +64,7 @@ export async function registerUser(data: {
         name: data.email.split("@")[0],
         role: data.role,
         mobile: data.mobile,
+        termsAcceptedAt: new Date(),
         ...(data.role === "REFERRER" && data.corporateEmail
           ? {
               referrerProfile: {

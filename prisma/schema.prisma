@@ -30,6 +30,7 @@ model User {
   lastLoginAt   DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  termsAcceptedAt DateTime?
 
   // Stripe Monetization
   stripeCustomerId     String?   @unique

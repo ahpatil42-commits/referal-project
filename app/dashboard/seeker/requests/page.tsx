@@ -81,7 +81,7 @@ export default async function SeekerRequestsPage() {
                     </div>
                     <p style={{ fontSize: "0.825rem", color: "var(--color-text-muted)", marginTop: "0.3rem" }}>
                       Referrer: <strong style={{ color: "var(--color-text-secondary)" }}>{refName}</strong>
-                      {req.referrer.company && ` · ${req.referrer.company}`}
+                      {req.referrer.company && req.referrer.company !== req.company && ` · ${req.referrer.company}`}
                       {" · "}
                       {new Date(req.createdAt).toLocaleDateString("en-US", {
                         month: "short", day: "numeric", year: "numeric",

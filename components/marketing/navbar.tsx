@@ -30,8 +30,6 @@ export function LandingNavbar() {
       {/* Desktop Menu */}
       <div className="hidden md:flex gap-6">
         <Link href="/pricing" className="text-link" style={{ fontSize: "0.95rem", fontWeight: 600 }}>Pricing</Link>
-        <Link href="#feedback" className="text-link" style={{ fontSize: "0.95rem", fontWeight: 600 }}>Feedback</Link>
-        <Link href="#reviews" className="text-link" style={{ fontSize: "0.95rem", fontWeight: 600 }}>Reviews</Link>
       </div>
 
       {/* Mobile Hamburger Icon */}
@@ -59,8 +57,6 @@ export function LandingNavbar() {
           alignItems: "center"
         }}>
           <Link href="/pricing" onClick={() => setIsOpen(false)} style={{ fontSize: "1.1rem", fontWeight: 600, color: "white", textDecoration: "none" }}>Pricing</Link>
-          <Link href="#feedback" onClick={() => setIsOpen(false)} style={{ fontSize: "1.1rem", fontWeight: 600, color: "white", textDecoration: "none" }}>Feedback</Link>
-          <Link href="#reviews" onClick={() => setIsOpen(false)} style={{ fontSize: "1.1rem", fontWeight: 600, color: "white", textDecoration: "none" }}>Reviews</Link>
           <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
             <Link 
               href="/login"

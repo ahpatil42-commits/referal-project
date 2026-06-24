@@ -21,6 +21,9 @@ const RegisterSchema = z
     mobile: z.string().optional().refine((val) => !val || /^[0-9]{7,15}$/.test(val), {
       message: "Mobile number must be between 7 and 15 digits",
     }),
+    terms: z.boolean().refine((val) => val === true, {
+      message: "You must accept the Terms and Conditions",
+    }),
   });
 
 type RegisterFormValues = z.infer<typeof RegisterSchema>;
@@ -38,11 +41,13 @@ export default function RegisterPage() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(RegisterSchema),
+    mode: "onTouched",
     defaultValues: {
       email: "",
       password: "",
       countryCode: "+1",
       mobile: "",
+      terms: false,
     },
   });
 
@@ -240,6 +245,24 @@ export default function RegisterPage() {
               </p>
             )}
           </div>
+
+          {/* Terms and Conditions */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+            <input
+              type="checkbox"
+              id="register-terms"
+              {...register("terms")}
+              style={{ marginTop: "0.25rem" }}
+            />
+            <label htmlFor="register-terms" style={{ fontSize: "0.85rem", color: "var(--color-text-secondary)", lineHeight: 1.5 }}>
+              I agree to the <Link href="/terms" className="text-link" target="_blank">Terms of Service</Link> and <Link href="/privacy" className="text-link" target="_blank">Privacy Policy</Link>.
+            </label>
+          </div>
+          {errors.terms && (
+            <p className="form-error" style={{ marginTop: "-0.5rem" }}>
+              <span>✕</span> {errors.terms.message}
+            </p>
+          )}
 
           {/* Submit */}
           <button
