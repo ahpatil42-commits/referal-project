@@ -17,7 +17,15 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
 
         return {
-          allowedContentTypes: ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'],
+          allowedContentTypes: [
+            'image/jpeg', 
+            'image/png', 
+            'image/gif', 
+            'application/pdf', 
+            'text/plain', 
+            'application/msword', 
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+          ],
           tokenPayload: JSON.stringify({
             userId: session.user.id,
             payload: clientPayload
