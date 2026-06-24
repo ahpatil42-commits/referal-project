@@ -712,6 +712,9 @@ a.text-link:hover::after {
     z-index: 50;
     width: 260px; /* Slightly wider on mobile for touch */
   }
+  .sidebar-inner {
+    width: 100% !important;
+  }
   .sidebar-wrapper.open {
     transform: translateX(0);
   }

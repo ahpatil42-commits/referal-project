@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { decrypt } from "@/lib/encryption";
 
 export async function POST(req: Request) {
   try {
@@ -41,6 +42,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "ATS Integration is not configured for this profile." }, { status: 400 });
     }
 
+    let decryptedAtsApiKey: string;
+    try {
+      decryptedAtsApiKey = decrypt(atsApiKey);
+    } catch (e) {
+      console.error("[ATS_PUSH_ERROR] Failed to decrypt API key", e);
+      return NextResponse.json({ error: "Invalid or corrupted ATS API key." }, { status: 500 });
+    }
+
     if (atsProvider.toUpperCase() === "GREENHOUSE") {
       // Format payload for Greenhouse Harvest API
       const payload = {
@@ -61,7 +70,7 @@ export async function POST(req: Request) {
       }
 
       // Encode API Key for Basic Auth
-      const authKey = Buffer.from(`${atsApiKey}:`).toString('base64');
+      const authKey = Buffer.from(`${decryptedAtsApiKey}:`).toString('base64');
 
       /*
       // REAL IMPLEMENTATION (Commented out to prevent errors with fake keys during testing)

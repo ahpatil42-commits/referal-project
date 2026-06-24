@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { GoogleGenAI } from "@google/genai";
-import { apiRateLimiter } from "@/lib/rate-limit";
+import { apiRateLimiter } from "@/lib/rate-limit-edge";
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 import path from "path";

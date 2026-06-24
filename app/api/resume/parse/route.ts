@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 import path from "path";
-import { apiRateLimiter } from "@/lib/rate-limit";
+import { apiRateLimiter } from "@/lib/rate-limit-edge";
 
 export async function POST(request: Request) {
   try {

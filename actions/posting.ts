@@ -97,8 +97,9 @@ export async function deletePosting(postingId: string) {
       return { error: "Posting not found or unauthorized" };
     }
 
-    await db.referralPosting.delete({
+    await db.referralPosting.update({
       where: { id: postingId },
+      data: { isActive: false },
     });
 
     revalidatePath("/dashboard/referrer/profile");

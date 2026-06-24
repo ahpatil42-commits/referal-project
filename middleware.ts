@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { apiRateLimiter } from "@/lib/rate-limit";
+import { apiRateLimiter } from "@/lib/rate-limit-edge";
 
 export default auth((req) => {
   const { nextUrl } = req;

@@ -1,5 +1,6 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
-import { UploadThingError } from "uploadthing/server";
+import { UploadThingError, UTApi } from "uploadthing/server";
+import pdfParse from "pdf-parse";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 
@@ -21,13 +22,26 @@ export const ourFileRouter = {
       console.log("[Uploadthing] File URL:", file.url);
       
       try {
+        // Strict PDF Validation
+        const res = await fetch(file.url);
+        const buffer = await res.arrayBuffer();
+        
+        try {
+          await pdfParse(Buffer.from(buffer));
+        } catch (parseError) {
+          console.error("[Uploadthing] SECURITY WARNING: Invalid PDF payload detected. Deleting file.", parseError);
+          const utapi = new UTApi();
+          await utapi.deleteFiles(file.key);
+          throw new UploadThingError("Invalid PDF format detected.");
+        }
+
         await db.seekerProfile.update({
           where: { userId: metadata.userId },
           data: { resumeUrl: file.url }
         });
         console.log("[Uploadthing] Updated SeekerProfile with resumeUrl");
       } catch (err) {
-        console.error("[Uploadthing] Failed to update SeekerProfile:", err);
+        console.error("[Uploadthing] Failed to process resume upload:", err);
       }
       
       return { uploadedBy: metadata.userId, url: file.url };

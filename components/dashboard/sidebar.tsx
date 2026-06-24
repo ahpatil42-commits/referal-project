@@ -84,9 +84,10 @@ export function Sidebar({ role, email, image }: SidebarProps) {
   return (
     <>
       <aside
+        className="sidebar-inner"
         style={{
-        width: "100%",
-        height: "100vh",
+        width: "260px", // Fixed width
+        height: "100dvh", // use 100dvh for mobile
         display: "flex",
         flexDirection: "column",
         background: "var(--color-bg-elevated)",

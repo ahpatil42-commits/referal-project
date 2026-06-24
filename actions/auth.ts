@@ -8,7 +8,7 @@ import crypto from "crypto";
 import { sendPasswordResetEmail, sendCorporateVerificationEmail, sendOTPEmail } from "@/lib/mail";
 import { sendSMSOTP } from "@/lib/sms";
 
-const registerRateLimit = new Map<string, { count: number; timestamp: number }>();
+import { authRateLimiter } from "@/lib/rate-limit";
 
 const RegisterSchema = z.object({
   email: z.string().email(),
@@ -41,17 +41,11 @@ export async function registerUser(data: {
 
     // Rate Limiting (Max 5 attempts per IP/Email per hour)
     const rateKey = data.email.toLowerCase();
-    const now = Date.now();
-    const rateData = registerRateLimit.get(rateKey) || { count: 0, timestamp: now };
-    if (now - rateData.timestamp > 3600000) {
-      rateData.count = 0;
-      rateData.timestamp = now;
-    }
-    if (rateData.count >= 5) {
+    const rateLimit = await authRateLimiter.check(rateKey);
+    
+    if (!rateLimit.success) {
       return { error: "Too many registration attempts. Please try again later." };
     }
-    rateData.count += 1;
-    registerRateLimit.set(rateKey, rateData);
 
     const existingUser = await db.user.findUnique({
       where: { email: data.email },

@@ -3,6 +3,7 @@ import { AccountVerificationSettings } from "@/components/dashboard/account-veri
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
+import { ReferrerSettings } from "@/components/dashboard/referrer-settings";
 
 export const metadata = {
   title: "Settings | ReferralAI",
@@ -15,7 +16,10 @@ export default async function SettingsPage() {
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { email: true, emailVerified: true, mobile: true, mobileVerified: true }
+    select: { 
+      email: true, emailVerified: true, mobile: true, mobileVerified: true, role: true,
+      referrerProfile: { select: { maxReferrals: true, atsProvider: true } } 
+    }
   });
 
   if (!user) redirect("/login");
@@ -39,6 +43,13 @@ export default async function SettingsPage() {
         mobile={user.mobile}
         mobileVerified={!!user.mobileVerified}
       />
+
+      {user.role === "REFERRER" && user.referrerProfile && (
+        <ReferrerSettings 
+          maxReferrals={user.referrerProfile.maxReferrals} 
+          atsProvider={user.referrerProfile.atsProvider} 
+        />
+      )}
 
       <GDPRActions />
     </div>

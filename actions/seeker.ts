@@ -31,7 +31,7 @@ export async function updateSeekerProfile(
   if (!session?.user?.id) return { error: "Not authenticated." };
   if (session.user.role !== "SEEKER") return { error: "Unauthorized access." };
 
-  const rateLimit = actionRateLimiter.check(session.user.id);
+  const rateLimit = await actionRateLimiter.check(session.user.id);
   if (!rateLimit.success) return { error: "Too many requests. Please wait a minute." };
 
   const validated = SeekerProfileSchema.safeParse(values);
@@ -93,7 +93,7 @@ export async function sendReferralRequest(
   if (!session?.user?.id) return { error: "Not authenticated." };
   if (session.user.role !== "SEEKER") return { error: "Only seekers can send requests." };
 
-  const rateLimit = actionRateLimiter.check(session.user.id);
+  const rateLimit = await actionRateLimiter.check(session.user.id);
   if (!rateLimit.success) return { error: "Too many requests. Please wait a minute." };
 
   const validated = SendRequestSchema.safeParse(values);

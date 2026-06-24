@@ -14,10 +14,10 @@ interface ReferrerData {
   bio: string | null;
 }
 
-// Simple in-memory cache to prevent Gemini API rate limiting
-// Keys: `${seeker.userId || seeker.id}-${referrer.id}`
-const matchScoreCache = new Map<string, { score: number; expires: number }>();
-const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+import { redis } from "@/lib/redis";
+import { logAIFailure } from "@/lib/logger";
+
+const CACHE_TTL_SECONDS = 60 * 60; // 1 hour
 
 /**
  * Calculates an "AI Match Score" (0-100) using Ollama to predict compatibility.
@@ -29,11 +29,15 @@ export async function calculateMatchScore(seeker: SeekerData | null, referrer: R
   // Try Cache First
   const seekerIdentifier = (seeker as any).userId || (seeker as any).id || "unknown";
   const referrerIdentifier = referrer.id || "unknown";
-  const cacheKey = `${seekerIdentifier}-${referrerIdentifier}`;
+  const cacheKey = `match_score:${seekerIdentifier}:${referrerIdentifier}`;
   
-  const cached = matchScoreCache.get(cacheKey);
-  if (cached && cached.expires > Date.now()) {
-    return cached.score;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return parseInt(cached, 10);
+    }
+  } catch (e) {
+    // Ignore redis error and compute
   }
 
   // 1. Calculate a Fallback Score (Keyword Match)
@@ -107,18 +111,18 @@ export async function calculateMatchScore(seeker: SeekerData | null, referrer: R
     if (match) {
       const parsedScore = parseInt(match[0], 10);
       if (parsedScore >= 0 && parsedScore <= 100) {
-        matchScoreCache.set(cacheKey, { score: parsedScore, expires: Date.now() + CACHE_TTL });
+        await redis.setex(cacheKey, CACHE_TTL_SECONDS, parsedScore.toString()).catch(() => {});
         return parsedScore;
       }
     }
     
-    matchScoreCache.set(cacheKey, { score: fallbackScore, expires: Date.now() + CACHE_TTL });
+    await redis.setex(cacheKey, CACHE_TTL_SECONDS, fallbackScore.toString()).catch(() => {});
     return fallbackScore;
 
   } catch (error) {
     // If Gemini is unavailable, offline, or timed out
-    // Silently fallback so the UI remains usable
-    matchScoreCache.set(cacheKey, { score: fallbackScore, expires: Date.now() + CACHE_TTL });
+    logAIFailure("calculateMatchScore", error, { seekerIdentifier, referrerIdentifier });
+    await redis.setex(cacheKey, CACHE_TTL_SECONDS, fallbackScore.toString()).catch(() => {});
     return fallbackScore;
   }
 }

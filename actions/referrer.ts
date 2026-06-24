@@ -30,7 +30,7 @@ export async function updateReferrerProfile(
   if (!session?.user?.id) return { error: "Not authenticated." };
   if (session.user.role !== "REFERRER") return { error: "Unauthorized access." };
 
-  const rateLimit = actionRateLimiter.check(session.user.id);
+  const rateLimit = await actionRateLimiter.check(session.user.id);
   if (!rateLimit.success) return { error: "Too many requests. Please wait a minute." };
 
   const validated = ReferrerProfileSchema.safeParse(values);
@@ -116,7 +116,7 @@ export async function updateRequestStatus(
   if (!session?.user?.id) return { error: "Not authenticated." };
   if (session.user.role !== "REFERRER") return { error: "Only referrers can update request status." };
 
-  const rateLimit = actionRateLimiter.check(session.user.id);
+  const rateLimit = await actionRateLimiter.check(session.user.id);
   if (!rateLimit.success) return { error: "Too many requests. Please wait a minute." };
 
   const validated = UpdateStatusSchema.safeParse(values);
