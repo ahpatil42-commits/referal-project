@@ -8,7 +8,7 @@ import { updateSeekerProfile } from "@/actions/seeker";
 import { updateProfileImage } from "@/actions/settings";
 import { toast } from "sonner";
 import { ResumeRoaster } from "./resume-roaster";
-import { UploadButton, UploadDropzone } from "@/utils/uploadthing";
+import { upload } from "@vercel/blob/client";
 
 const schema = z.object({
   headline:    z.string().max(120).optional(),
@@ -57,6 +57,40 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
     },
   });
   const { setValue } = useFormReturn;
+
+  const handleResumeFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    const file = e.target.files[0];
+    setIsUploading(true);
+    try {
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+        clientPayload: 'resume',
+      });
+      await handleResumeUploadComplete(newBlob.url);
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
+      setIsUploading(false);
+    }
+  };
+
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    const file = e.target.files[0];
+    setIsImageUploading(true);
+    try {
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+        clientPayload: 'avatar',
+      });
+      await handleImageUploadComplete(newBlob.url);
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
+      setIsImageUploading(false);
+    }
+  };
 
   const handleResumeUploadComplete = async (url: string) => {
     setIsUploading(true);
@@ -139,13 +173,19 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
         <div>
           <h4 style={{ margin: "0 0 0.5rem", color: "var(--color-text-primary)" }}>Profile Photo</h4>
           <div style={{ pointerEvents: isImageUploading ? "none" : "auto", opacity: isImageUploading ? 0.7 : 1 }}>
-            <UploadButton
-              endpoint="imageUploader"
-              onClientUploadComplete={(res) => {
-                if (res?.[0]) handleImageUploadComplete(res[0].url);
-              }}
-              onUploadError={(error: Error) => {
-                toast.error(`Upload failed: ${error.message}`);
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleImageFileChange} 
+              disabled={isImageUploading}
+              style={{
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
+                borderRadius: "0.5rem",
+                padding: "0.5rem",
+                color: "var(--color-text-primary)",
+                width: "100%",
+                cursor: "pointer"
               }}
             />
           </div>
@@ -179,13 +219,19 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
             </p>
           </div>
           <div style={{ pointerEvents: isUploading ? "none" : "auto", opacity: isUploading ? 0.7 : 1, width: "100%", marginTop: "auto" }}>
-            <UploadButton
-              endpoint="resumeUploader"
-              onClientUploadComplete={(res) => {
-                if (res?.[0]) handleResumeUploadComplete(res[0].url);
-              }}
-              onUploadError={(error: Error) => {
-                toast.error(`Upload failed: ${error.message}`);
+            <input 
+              type="file" 
+              accept=".pdf,.doc,.docx,.txt" 
+              onChange={handleResumeFileChange} 
+              disabled={isUploading}
+              style={{
+                background: "var(--color-bg)",
+                border: "1px solid rgba(99,102,241,0.5)",
+                borderRadius: "0.5rem",
+                padding: "0.5rem",
+                color: "var(--color-text-primary)",
+                width: "100%",
+                cursor: "pointer"
               }}
             />
           </div>

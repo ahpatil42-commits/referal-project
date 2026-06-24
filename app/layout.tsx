@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "@uploadthing/react/styles.css";
+
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { RealtimeProvider } from "@/components/providers/realtime-provider";
 import { auth } from "@/auth";

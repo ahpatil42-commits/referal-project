@@ -7,7 +7,7 @@ import * as z from "zod";
 import { updateReferrerProfile } from "@/actions/referrer";
 import { updateProfileImage } from "@/actions/settings";
 import { toast } from "sonner";
-import { UploadButton } from "@/utils/uploadthing";
+import { upload } from "@vercel/blob/client";
 
 const schema = z.object({
   company:        z.string().max(100).optional(),
@@ -42,6 +42,23 @@ export function ReferrerProfileForm({ initialData }: ReferrerProfileFormProps) {
       maxReferrals:   initialData.maxReferrals   ?? 3,
     },
   });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    const file = e.target.files[0];
+    setIsImageUploading(true);
+    try {
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
+        clientPayload: 'avatar',
+      });
+      await handleImageUploadComplete(newBlob.url);
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
+      setIsImageUploading(false);
+    }
+  };
 
   const onSubmit = (data: FormValues) => {
     startTransition(async () => {
@@ -84,13 +101,19 @@ export function ReferrerProfileForm({ initialData }: ReferrerProfileFormProps) {
         <div>
           <h4 style={{ margin: "0 0 0.5rem", color: "var(--color-text-primary)" }}>Profile Photo</h4>
           <div style={{ pointerEvents: isImageUploading ? "none" : "auto", opacity: isImageUploading ? 0.7 : 1 }}>
-            <UploadButton
-              endpoint="imageUploader"
-              onClientUploadComplete={(res) => {
-                if (res?.[0]) handleImageUploadComplete(res[0].url);
-              }}
-              onUploadError={(error: Error) => {
-                toast.error(`Upload failed: ${error.message}`);
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleFileChange} 
+              disabled={isImageUploading}
+              style={{
+                background: "var(--glass-bg)",
+                border: "1px solid var(--glass-border)",
+                borderRadius: "0.5rem",
+                padding: "0.5rem",
+                color: "var(--color-text-primary)",
+                width: "100%",
+                cursor: "pointer"
               }}
             />
           </div>
