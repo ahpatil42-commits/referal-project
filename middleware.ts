@@ -92,9 +92,8 @@ export const config = {
      * - _next/static
      * - _next/image
      * - favicon.ico
-     * - api/uploadthing (UploadThing webhooks)
      * - files with extensions (images, fonts, etc.)
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/uploadthing|.*\\..*).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],
 };

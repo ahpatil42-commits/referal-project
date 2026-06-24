@@ -90,6 +90,12 @@ export const authConfig: NextAuthConfig = {
         token.role = (user as any).role || "SEEKER"; // Default role for OAuth signups
         token.isAdmin = (user as any).isAdmin || false;
 
+        // Force strip potentially huge default fields from the JWT to prevent HTTP 431 errors
+        delete token.name;
+        delete token.email;
+        delete token.picture;
+        delete token.sub;
+
         // For OAuth providers, trust the provider-verified email.
         // Fetch from DB to get the canonical emailVerified value set by the PrismaAdapter.
         if (account && account.provider !== "credentials") {
@@ -119,6 +125,21 @@ export const authConfig: NextAuthConfig = {
         // @ts-expect-error - Custom property added to session
         session.user.isAdmin = token.isAdmin as boolean;
         session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
+        
+        // Fetch dynamic user data from the DB to keep the JWT token size ultra-minimal
+        try {
+          const dbUser = await db.user.findUnique({
+            where: { id: token.id as string },
+            select: { name: true, email: true, image: true },
+          });
+          if (dbUser) {
+            session.user.name = dbUser.name;
+            session.user.email = dbUser.email;
+            session.user.image = dbUser.image;
+          }
+        } catch (e) {
+          console.error("Failed to fetch user data for session", e);
+        }
       }
       return session;
     },
