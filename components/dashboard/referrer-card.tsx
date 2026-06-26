@@ -18,7 +18,7 @@ interface ReferrerCardProps {
     isVerified: boolean;
     linkedinUrl: string | null;
     user: { email: string; name: string | null };
-    referralPostings?: { id: string; jobTitle: string; company: string; jobUrl: string | null; experience: string | null; skills: string | null; location: string | null }[];
+    referralPostings?: { id: string; jobTitle: string; company: string; jobUrl: string | null; description: string | null; experience: string | null; skills: string | null; location: string | null }[];
   };
   matchScore?: number;
 }
@@ -295,6 +295,7 @@ export function ReferrerCard({ referrer, matchScore }: ReferrerCardProps) {
           referrerId={referrer.id}
           referrerName={displayName}
           referrerCompany={referrer.company || referrer.referralPostings?.[0]?.company || ""}
+          defaultPosting={referrer.referralPostings?.[0]}
           onClose={() => setShowModal(false)}
         />
       )}
