@@ -45,6 +45,14 @@ export function RequestModal({
   onClose,
 }: RequestModalProps) {
   const [isPending, startTransition] = useTransition();
+  const [showSidebarOffset, setShowSidebarOffset] = useState(false);
+
+  useEffect(() => {
+    const updateOffset = () => setShowSidebarOffset(window.innerWidth >= 900);
+    updateOffset();
+    window.addEventListener("resize", updateOffset);
+    return () => window.removeEventListener("resize", updateOffset);
+  }, []);
 
   const defaultValues: FormValues = {
     jobTitle: defaultPosting?.jobTitle || "",
@@ -208,7 +216,7 @@ export function RequestModal({
         alignItems: "center",
         justifyContent: "center",
         padding: "1.5rem",
-        paddingLeft: "calc(220px + 1.5rem)", // Adjust for sidebar
+        paddingLeft: showSidebarOffset ? "calc(220px + 1.5rem)" : "1.5rem",
       }}
     >
       <div
