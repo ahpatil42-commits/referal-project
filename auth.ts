@@ -126,16 +126,20 @@ export const authConfig: NextAuthConfig = {
         session.user.isAdmin = token.isAdmin as boolean;
         session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
         
-        // Fetch dynamic user data from the DB to keep the JWT token size ultra-minimal
+        // Fetch dynamic user data from the DB to keep the JWT token size ultra-minimal.
+        // IMPORTANT: We deliberately do NOT include `image` here — Base64 data URIs
+        // stored by the old /api/upload/image endpoint would bloat the session cookie
+        // and cause Vercel's 494 REQUEST_HEADER_TOO_LARGE error on every page load.
+        // Avatar images are fetched separately via /api/profile/avatar.
         try {
           const dbUser = await db.user.findUnique({
             where: { id: token.id as string },
-            select: { name: true, email: true, image: true },
+            select: { name: true, email: true },
           });
           if (dbUser) {
-            session.user.name = dbUser.name;
+            session.user.name  = dbUser.name;
             session.user.email = dbUser.email;
-            session.user.image = dbUser.image;
+            // Deliberately omit session.user.image – fetch via /api/profile/avatar instead
           }
         } catch (e) {
           console.error("Failed to fetch user data for session", e);

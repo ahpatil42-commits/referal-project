@@ -6,6 +6,21 @@ const nextConfig = {
         protocol: "https",
         hostname: "utfs.io",
       },
+      {
+        // Vercel Blob storage — profile photos and resume uploads
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+      {
+        // Google / OAuth profile photos
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        // LinkedIn profile photos
+        protocol: "https",
+        hostname: "media.licdn.com",
+      },
     ],
   },
   serverExternalPackages: ["pdf-parse", "mammoth"],
@@ -40,7 +55,12 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com wss://*.pusher.com https://*.pusher.com; frame-src 'self' https://js.stripe.com;",
+            // connect-src:
+            //   https://vercel.com              — Vercel Blob client generates token here
+            //   https://*.public.blob.vercel-storage.com — actual blob PUT/GET destination
+            //   https://vitals.vercel-insights.com — Vercel Analytics
+            // img-src: https: covers blob CDN URLs
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com wss://*.pusher.com https://*.pusher.com https://vercel.com https://*.public.blob.vercel-storage.com https://vitals.vercel-insights.com; frame-src 'self' https://js.stripe.com;",
           },
         ],
       },
