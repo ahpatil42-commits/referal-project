@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -23,6 +23,14 @@ type FormValues = z.infer<typeof schema>;
 
 export function PostingModal({ onClose, defaultCompany }: { onClose: () => void, defaultCompany?: string }) {
   const [isPending, startTransition] = useTransition();
+  const [showSidebarOffset, setShowSidebarOffset] = useState(false);
+
+  useEffect(() => {
+    const updateOffset = () => setShowSidebarOffset(window.innerWidth >= 900);
+    updateOffset();
+    window.addEventListener("resize", updateOffset);
+    return () => window.removeEventListener("resize", updateOffset);
+  }, []);
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -89,7 +97,7 @@ export function PostingModal({ onClose, defaultCompany }: { onClose: () => void,
         alignItems: "center",
         justifyContent: "center",
         padding: "1.5rem",
-        paddingLeft: "calc(220px + 1.5rem)",
+        paddingLeft: showSidebarOffset ? "calc(220px + 1.5rem)" : "1.5rem",
       }}
     >
       <div
