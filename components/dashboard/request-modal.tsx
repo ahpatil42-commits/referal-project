@@ -17,10 +17,21 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+type PostingDetails = {
+  jobTitle: string;
+  company: string;
+  jobUrl?: string | null;
+  description?: string | null;
+  experience?: string | null;
+  skills?: string | null;
+  location?: string | null;
+};
+
 interface RequestModalProps {
   referrerId: string;
   referrerName: string;
   referrerCompany: string;
+  defaultPosting?: PostingDetails;
   onClose: () => void;
 }
 
@@ -30,13 +41,21 @@ export function RequestModal({
   referrerId,
   referrerName,
   referrerCompany,
+  defaultPosting,
   onClose,
 }: RequestModalProps) {
   const [isPending, startTransition] = useTransition();
 
+  const defaultValues: FormValues = {
+    jobTitle: defaultPosting?.jobTitle || "",
+    company: defaultPosting?.company || referrerCompany,
+    jobUrl: defaultPosting?.jobUrl || "",
+    coverNote: "",
+  };
+
   const { register, handleSubmit, setValue, getValues, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { company: referrerCompany },
+    defaultValues,
   });
 
   const [jdText, setJdText] = useState("");
@@ -325,6 +344,33 @@ export function RequestModal({
                   {isParsing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                   {isParsing ? "Extracting Details..." : "Autofill Fields"}
                 </button>
+              </div>
+            )}
+
+            {defaultPosting && (
+              <div style={{ marginBottom: "1.25rem", padding: "1rem", background: "rgba(255,255,255,0.04)", borderRadius: "12px", border: "1px solid var(--glass-border)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", alignItems: "flex-start" }}>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "0.5rem" }}>
+                      {defaultPosting.jobTitle} @ {defaultPosting.company}
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", color: "var(--color-text-secondary)", fontSize: "0.82rem" }}>
+                      {defaultPosting.location && <span>📍 {defaultPosting.location}</span>}
+                      {defaultPosting.experience && <span>⏱ {defaultPosting.experience}</span>}
+                      {defaultPosting.skills && <span>⚡ {defaultPosting.skills}</span>}
+                    </div>
+                  </div>
+                  {defaultPosting.jobUrl && (
+                    <a href={defaultPosting.jobUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-purple)", textDecoration: "underline", fontSize: "0.9rem", fontWeight: 600 }}>
+                      Open Job Posting ↗
+                    </a>
+                  )}
+                </div>
+                {defaultPosting.description && (
+                  <div style={{ marginTop: "0.75rem", maxHeight: "180px", overflowY: "auto", padding: "0.85rem", background: "rgba(0,0,0,0.12)", borderRadius: "10px", color: "var(--color-text-secondary)", lineHeight: 1.7, fontSize: "0.9rem" }}>
+                    {defaultPosting.description}
+                  </div>
+                )}
               </div>
             )}
 
