@@ -269,7 +269,7 @@ export function RequestModal({
               />
               <button
                 className="btn-primary"
-                style={{ padding: "0 1rem" }}
+                style={{ padding: "0 1rem", width: "auto", flex: "none" }}
                 onClick={sendChatMessage}
                 disabled={isAiTyping || isPending || !chatInput.trim()}
               >
