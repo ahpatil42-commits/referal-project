@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { sendOTPEmail } from "@/lib/mail";
-import { sendSMSOTP } from "@/lib/sms";
 import { authRateLimiter } from "@/lib/rate-limit";
 
 export async function updateMobileNumber(mobile: string) {
@@ -57,7 +56,9 @@ export async function sendVerificationOtp(type: "email" | "mobile") {
     if (type === "email") {
       await sendOTPEmail(identifier, otp);
     } else {
-      await sendSMSOTP(identifier, otp);
+      // TODO: Replace with a real SMS provider (e.g. Twilio) when ready.
+      console.log(`[SMS OTP] To: ${identifier} — Code: ${otp}`);
+
     }
 
     return { 

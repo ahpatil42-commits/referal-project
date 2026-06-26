@@ -74,11 +74,18 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 
-# Redis
-REDIS_URL="redis://localhost:6379"
+# Upstash Redis (edge rate limiting — free tier at upstash.com)
+UPSTASH_REDIS_REST_URL="https://your-db.upstash.io"
+UPSTASH_REDIS_REST_TOKEN=""
 
-# Encryption (ATS API keys) — must be exactly 32 characters
-ENCRYPTION_KEY=
+# Vercel Blob (profile photos & resume uploads)
+BLOB_READ_WRITE_TOKEN="vercel_blob_rw_..."
+
+# Encryption key for ATS API keys stored in DB (must be exactly 32 chars)
+ENCRYPTION_KEY=""
+
+# Sentry error tracking (optional)
+SENTRY_DSN=""
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
@@ -135,10 +142,11 @@ Follow the prompts to promote a user to admin.
 ## Database Management
 
 ```bash
-npm run db:push      # Sync schema to DB (dev)
-npm run db:studio    # Open Prisma Studio (GUI)
-npm run db:seed      # Seed with sample data
-npm run db:generate  # Regenerate Prisma Client
+npm run db:push         # Sync schema to DB (dev)
+npm run db:studio       # Open Prisma Studio (GUI)
+npm run db:seed         # Seed with sample data
+npm run db:seed:users   # Seed local test users only
+npm run db:generate     # Regenerate Prisma Client
 ```
 
 ---
@@ -171,10 +179,10 @@ types/            TypeScript type extensions (NextAuth session)
 | Framework | Next.js 15 (App Router) |
 | Auth | NextAuth v5 (JWT) |
 | Database | PostgreSQL + Prisma |
-| Cache | Redis (ioredis) |
+| Cache | Redis (Upstash) |
 | AI | Google Gemini |
 | Real-time | Pusher |
 | Email | Resend |
 | Payments | Stripe |
-| File Uploads | UploadThing |
+| File Uploads | Vercel Blob |
 | Analytics | Vercel Analytics |

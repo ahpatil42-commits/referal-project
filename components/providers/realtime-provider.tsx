@@ -33,7 +33,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
     return () => {
       pusherClient.unsubscribe(channelName);
     };
-  }, [session, toast, router]);
+  }, [session, router]);
 
   return <>{children}</>;
 }

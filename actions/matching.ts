@@ -14,8 +14,14 @@ interface ReferrerData {
   bio: string | null;
 }
 
-import { redis } from "@/lib/redis";
+import { Redis } from "@upstash/redis";
 import { logAIFailure } from "@/lib/logger";
+
+const redis = new Redis({
+  url:   process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
 
 const CACHE_TTL_SECONDS = 60 * 60; // 1 hour
 
@@ -32,9 +38,9 @@ export async function calculateMatchScore(seeker: SeekerData | null, referrer: R
   const cacheKey = `match_score:${seekerIdentifier}:${referrerIdentifier}`;
   
   try {
-    const cached = await redis.get(cacheKey);
-    if (cached) {
-      return parseInt(cached, 10);
+    const cached = await redis.get<number>(cacheKey);
+    if (cached !== null && cached !== undefined) {
+      return cached;
     }
   } catch (e) {
     // Ignore redis error and compute
@@ -110,18 +116,17 @@ export async function calculateMatchScore(seeker: SeekerData | null, referrer: R
     if (match) {
       const parsedScore = parseInt(match[0], 10);
       if (parsedScore >= 0 && parsedScore <= 100) {
-        await redis.setex(cacheKey, CACHE_TTL_SECONDS, parsedScore.toString()).catch(() => {});
+        await redis.set(cacheKey, parsedScore, { ex: CACHE_TTL_SECONDS }).catch(() => {});
         return parsedScore;
       }
     }
     
-    await redis.setex(cacheKey, CACHE_TTL_SECONDS, fallbackScore.toString()).catch(() => {});
+    await redis.set(cacheKey, fallbackScore, { ex: CACHE_TTL_SECONDS }).catch(() => {});
     return fallbackScore;
 
   } catch (error) {
-    // If Gemini is unavailable, offline, or timed out
     logAIFailure("calculateMatchScore", error, { seekerIdentifier, referrerIdentifier });
-    await redis.setex(cacheKey, CACHE_TTL_SECONDS, fallbackScore.toString()).catch(() => {});
+    await redis.set(cacheKey, fallbackScore, { ex: CACHE_TTL_SECONDS }).catch(() => {});
     return fallbackScore;
   }
 }

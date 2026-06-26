@@ -6,7 +6,6 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import crypto from "crypto";
 import { sendPasswordResetEmail, sendCorporateVerificationEmail, sendOTPEmail } from "@/lib/mail";
-import { sendSMSOTP } from "@/lib/sms";
 
 import { authRateLimiter } from "@/lib/rate-limit";
 
@@ -110,7 +109,10 @@ export async function registerUser(data: {
           expires: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
         }
       });
-      await sendSMSOTP(data.mobile, mobileOtp);
+      // TODO: Replace with a real SMS provider (e.g. Twilio) when ready.
+      // For now, log to console so OTPs are visible in server logs during dev.
+      console.log(`[SMS OTP] To: ${data.mobile} — Code: ${mobileOtp}`);
+
     }
 
     if (data.role === "REFERRER" && data.corporateEmail) {

@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test artifacts
+/playwright-report/
+/test-results/
+
+# agent-generated logs
+agent-log.txt

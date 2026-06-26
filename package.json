@@ -11,6 +11,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "node scripts/seed.mjs",
+    "db:seed:users": "node scripts/seed-test-users.mjs",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate && prisma generate --schema=prisma-analytics/schema.prisma",
     "agent": "node scripts/recursive-agent.mjs"
@@ -30,7 +31,6 @@
     "@vercel/blob": "^2.4.1",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.2.0",
-    "ioredis": "^5.11.1",
     "isomorphic-dompurify": "^3.18.0",
     "lucide-react": "^1.21.0",
     "mammoth": "^1.12.0",
@@ -61,7 +61,6 @@
     "eslint": "^8",
     "eslint-config-next": "^15.3.4",
     "prisma": "^5.22.0",
-    "puppeteer": "^25.1.0",
     "typescript": "^5"
   }
 }
