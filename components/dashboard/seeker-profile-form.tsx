@@ -300,7 +300,7 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
         </div>
         <div>
           <label className="form-label">GitHub URL</label>
-          <input className={`form-input ${useFormReturn.formState.errors.githubUrl ? "error" : ""`} placeholder="https://github.com/..." {...useFormReturn.register("githubUrl")} disabled={isFormDisabled} />
+          <input className={`form-input ${useFormReturn.formState.errors.githubUrl ? "error" : ""}`} placeholder="https://github.com/..." {...useFormReturn.register("githubUrl")} disabled={isFormDisabled} />
           {useFormReturn.formState.errors.githubUrl && <p className="form-error">✕ {useFormReturn.formState.errors.githubUrl.message}</p>}
         </div>
       </div>
