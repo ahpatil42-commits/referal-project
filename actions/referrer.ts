@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
-import { sendEmailNotification } from "@/lib/email";
+import { sendEmailNotification } from "@/lib/mail";
 import { z } from "zod";
 import { pusherServer } from "@/lib/pusher";
 import { getBaseUrl } from "@/lib/url";

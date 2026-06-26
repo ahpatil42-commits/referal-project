@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { sendEmailNotification } from "@/lib/email";
+import { sendEmailNotification } from "@/lib/mail";
 import { actionRateLimiter } from "@/lib/rate-limit";
 import { pusherServer } from "@/lib/pusher";
 import { getBaseUrl } from "@/lib/url";
