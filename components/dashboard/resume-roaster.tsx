@@ -68,20 +68,18 @@ export function ResumeRoaster() {
       </div>
       
       <label
+        className="btn-primary"
         style={{
           cursor: isRoasting ? "not-allowed" : "pointer",
-          background: "rgba(239, 68, 68, 0.15)",
-          color: "#fca5a5",
-          padding: "0.5rem 1rem",
-          borderRadius: "6px",
-          fontSize: "0.85rem",
-          fontWeight: 600,
+          width: "auto",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0.75rem 1rem",
           marginTop: "auto",
           opacity: isRoasting ? 0.7 : 1,
           transition: "all 0.2s",
-          border: "1px solid rgba(239, 68, 68, 0.3)",
         }}
-        className="hover:bg-red-500/20"
       >
         {isRoasting ? "Analyzing..." : "Roast My Resume"}
         <input
@@ -94,7 +92,7 @@ export function ResumeRoaster() {
       </label>
 
       {result && (
-        <div style={{ marginTop: "1.5rem", width: "100%", textAlign: "left", background: "rgba(0,0,0,0.2)", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--glass-border)" }}>
+        <div style={{ marginTop: "1.5rem", width: "100%", textAlign: "left", background: "rgba(0,0,0,0.2)", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--glass-border)", maxHeight: "300px", overflowY: "auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", borderBottom: "1px solid var(--glass-border)", paddingBottom: "0.75rem" }}>
             <h5 style={{ margin: 0, color: "var(--color-text-primary)", fontSize: "1.1rem" }}>ATS Match Score</h5>
             <div style={{ 

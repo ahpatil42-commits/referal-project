@@ -43,6 +43,19 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
     return "";
   };
 
+  const hasProfileData = Boolean(
+    initialData.headline ||
+    initialData.bio ||
+    initialData.skills ||
+    initialData.resumeUrl ||
+    initialData.linkedinUrl ||
+    initialData.githubUrl ||
+    initialData.targetRoles
+  );
+
+  const [isEditing, setIsEditing] = useState(!hasProfileData);
+  const [isSaved, setIsSaved] = useState(hasProfileData);
+
   const useFormReturn = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -57,6 +70,8 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
     },
   });
   const { setValue } = useFormReturn;
+
+  const isFormDisabled = !isEditing;
 
   const handleResumeFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -150,49 +165,66 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
         skills:      toArray(data.skills),
         targetRoles: toArray(data.targetRoles),
       });
-      if (res.error)   toast.error(res.error);
-      if (res.success) toast.success(res.success);
+      if (res.error) {
+        toast.error(res.error);
+        return;
+      }
+      if (res.success) {
+        toast.success(res.success);
+        setIsEditing(false);
+        setIsSaved(true);
+      }
     });
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       {/* Profile Photo Section */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-        <div style={{ 
-          width: "80px", height: "80px", borderRadius: "50%", 
-          background: "rgba(255,255,255,0.05)", border: "2px solid var(--glass-border)",
-          overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" 
-        }}>
-          {previewImage ? (
-            <img src={previewImage} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <span style={{ fontSize: "2rem", color: "var(--color-text-muted)" }}>👤</span>
-          )}
-        </div>
-        <div>
-          <h4 style={{ margin: "0 0 0.5rem", color: "var(--color-text-primary)" }}>Profile Photo</h4>
-          <div style={{ pointerEvents: isImageUploading ? "none" : "auto", opacity: isImageUploading ? 0.7 : 1 }}>
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={handleImageFileChange} 
-              disabled={isImageUploading}
-              style={{
-                background: "var(--glass-bg)",
-                border: "1px solid var(--glass-border)",
-                borderRadius: "0.5rem",
-                padding: "0.5rem",
-                color: "var(--color-text-primary)",
-                width: "100%",
-                cursor: "pointer"
-              }}
-            />
+      <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+          <div style={{
+            width: "80px", height: "80px", borderRadius: "50%",
+            background: "rgba(255,255,255,0.05)", border: "2px solid var(--glass-border)",
+            overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center"
+          }}>
+            {previewImage ? (
+              <img src={previewImage} alt="Profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <span style={{ fontSize: "2rem", color: "var(--color-text-muted)" }}>👤</span>
+            )}
+          </div>
+          <div>
+            <h4 style={{ margin: "0 0 0.5rem", color: "var(--color-text-primary)" }}>Profile Photo</h4>
+            <div style={{ pointerEvents: isImageUploading || isFormDisabled ? "none" : "auto", opacity: isImageUploading || isFormDisabled ? 0.6 : 1 }}>
+              <label
+                className="btn-secondary"
+                style={{ width: "auto", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+              >
+                {isImageUploading ? "Uploading..." : "Upload photo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileChange}
+                  disabled={isImageUploading || isFormDisabled}
+                  style={{ display: "none" }}
+                />
+              </label>
+            </div>
           </div>
         </div>
+        {isSaved && !isEditing ? (
+          <button
+            type="button"
+            className="btn-secondary"
+            style={{ width: "auto", alignSelf: "flex-start" }}
+            onClick={() => setIsEditing(true)}
+          >
+            Edit Profile
+          </button>
+        ) : null}
       </div>
 
-    <form onSubmit={useFormReturn.handleSubmit(onSubmit)} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <form onSubmit={useFormReturn.handleSubmit(onSubmit)} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
       {/* AI Resume Upload Zone */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", alignItems: "stretch" }}>
@@ -218,22 +250,20 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
               Upload your PDF, DOCX, or TXT resume to instantly extract your skills and generate a bio.
             </p>
           </div>
-          <div style={{ pointerEvents: isUploading ? "none" : "auto", opacity: isUploading ? 0.7 : 1, width: "100%", marginTop: "auto" }}>
-            <input 
-              type="file" 
-              accept=".pdf,.doc,.docx,.txt" 
-              onChange={handleResumeFileChange} 
-              disabled={isUploading}
-              style={{
-                background: "var(--color-bg)",
-                border: "1px solid rgba(99,102,241,0.5)",
-                borderRadius: "0.5rem",
-                padding: "0.5rem",
-                color: "var(--color-text-primary)",
-                width: "100%",
-                cursor: "pointer"
-              }}
-            />
+          <div style={{ pointerEvents: isUploading || isFormDisabled ? "none" : "auto", opacity: isUploading || isFormDisabled ? 0.6 : 1, width: "100%", marginTop: "auto" }}>
+            <label
+              className="btn-secondary"
+              style={{ width: "100%", justifyContent: "center", display: "inline-flex", gap: "0.5rem" }}
+            >
+              {isUploading ? "Parsing resume..." : "Upload Resume"}
+              <input 
+                type="file" 
+                accept=".pdf,.doc,.docx,.txt" 
+                onChange={handleResumeFileChange} 
+                disabled={isUploading || isFormDisabled}
+                style={{ display: "none" }}
+              />
+            </label>
           </div>
         </div>
         
@@ -242,48 +272,50 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
 
       <div>
         <label className="form-label">Professional Headline</label>
-        <input className={`form-input ${useFormReturn.formState.errors.headline ? "error" : ""}`} placeholder="e.g. Full-Stack Engineer with 3 years of React experience" {...useFormReturn.register("headline")} />
+        <input className={`form-input ${useFormReturn.formState.errors.headline ? "error" : ""}`} placeholder="e.g. Full-Stack Engineer with 3 years of React experience" {...useFormReturn.register("headline")} disabled={isFormDisabled} />
         {useFormReturn.formState.errors.headline && <p className="form-error">✕ {useFormReturn.formState.errors.headline.message}</p>}
       </div>
 
       <div>
         <label className="form-label">Bio</label>
-        <textarea className={`form-input ${useFormReturn.formState.errors.bio ? "error" : ""}`} rows={4} placeholder="Tell referrers about yourself, your goals, and what makes you a strong candidate..." style={{ resize: "vertical" }} {...useFormReturn.register("bio")} />
+        <textarea className={`form-input ${useFormReturn.formState.errors.bio ? "error" : ""}`} rows={4} placeholder="Tell referrers about yourself, your goals, and what makes you a strong candidate..." style={{ resize: "vertical" }} {...useFormReturn.register("bio")} disabled={isFormDisabled} />
         {useFormReturn.formState.errors.bio && <p className="form-error">✕ {useFormReturn.formState.errors.bio.message}</p>}
       </div>
 
       <div>
         <label className="form-label">Skills <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(comma-separated)</span></label>
-        <input className="form-input" placeholder="e.g. React, TypeScript, Node.js, PostgreSQL" {...useFormReturn.register("skills")} />
+        <input className="form-input" placeholder="e.g. React, TypeScript, Node.js, PostgreSQL" {...useFormReturn.register("skills")} disabled={isFormDisabled} />
       </div>
 
       <div>
         <label className="form-label">Target Roles <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(comma-separated)</span></label>
-        <input className="form-input" placeholder="e.g. Frontend Engineer, Full-Stack Engineer" {...useFormReturn.register("targetRoles")} />
+        <input className="form-input" placeholder="e.g. Frontend Engineer, Full-Stack Engineer" {...useFormReturn.register("targetRoles")} disabled={isFormDisabled} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         <div>
           <label className="form-label">LinkedIn URL</label>
-          <input className={`form-input ${useFormReturn.formState.errors.linkedinUrl ? "error" : ""}`} placeholder="https://linkedin.com/in/..." {...useFormReturn.register("linkedinUrl")} />
+          <input className={`form-input ${useFormReturn.formState.errors.linkedinUrl ? "error" : ""}`} placeholder="https://linkedin.com/in/..." {...useFormReturn.register("linkedinUrl")} disabled={isFormDisabled} />
           {useFormReturn.formState.errors.linkedinUrl && <p className="form-error">✕ {useFormReturn.formState.errors.linkedinUrl.message}</p>}
         </div>
         <div>
           <label className="form-label">GitHub URL</label>
-          <input className={`form-input ${useFormReturn.formState.errors.githubUrl ? "error" : ""}`} placeholder="https://github.com/..." {...useFormReturn.register("githubUrl")} />
+          <input className={`form-input ${useFormReturn.formState.errors.githubUrl ? "error" : ""`} placeholder="https://github.com/..." {...useFormReturn.register("githubUrl")} disabled={isFormDisabled} />
           {useFormReturn.formState.errors.githubUrl && <p className="form-error">✕ {useFormReturn.formState.errors.githubUrl.message}</p>}
         </div>
       </div>
 
       <div>
         <label className="form-label">Resume URL <span style={{ color: "var(--color-text-muted)", fontWeight: 400 }}>(optional)</span></label>
-        <input className={`form-input ${useFormReturn.formState.errors.resumeUrl ? "error" : ""}`} placeholder="https://drive.google.com/..." {...useFormReturn.register("resumeUrl")} />
+        <input className={`form-input ${useFormReturn.formState.errors.resumeUrl ? "error" : ""}`} placeholder="https://drive.google.com/..." {...useFormReturn.register("resumeUrl")} disabled={isFormDisabled} />
         {useFormReturn.formState.errors.resumeUrl && <p className="form-error">✕ {useFormReturn.formState.errors.resumeUrl.message}</p>}
       </div>
 
-      <button type="submit" className="btn-primary" disabled={isPending} style={{ marginTop: "0.5rem" }}>
-        {isPending ? <><span className="btn-spinner" />Saving...</> : "Save Profile"}
-      </button>
+      {isEditing ? (
+        <button type="submit" className="btn-primary" disabled={isPending} style={{ marginTop: "0.5rem" }}>
+          {isPending ? <><span className="btn-spinner" />Saving...</> : "Save Profile"}
+        </button>
+      ) : null}
     </form>
     </div>
   );
