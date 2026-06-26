@@ -37,6 +37,7 @@ export default async function SeekerProfilePage() {
             githubUrl:   profile?.githubUrl   ?? "",
             targetRoles: profile?.targetRoles ?? "",
             image:       user?.image          ?? null,
+            profileNumber: user?.profileNumber ?? null,
           }}
         />
       </div>

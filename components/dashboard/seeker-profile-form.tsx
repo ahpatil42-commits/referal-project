@@ -24,7 +24,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 interface SeekerProfileFormProps {
-  initialData: Partial<FormValues & { skills: any; targetRoles: any; image?: string | null }>;
+  initialData: Partial<FormValues & { skills: any; targetRoles: any; image?: string | null; profileNumber?: string | null }>;
 }
 
 export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
@@ -157,6 +157,11 @@ export function SeekerProfileForm({ initialData }: SeekerProfileFormProps) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+      {initialData.profileNumber && (
+        <div style={{ display: "inline-flex", alignSelf: "flex-start", padding: "0.45rem 0.75rem", borderRadius: "999px", background: "rgba(99,102,241,0.12)", color: "var(--color-primary-light)", fontSize: "0.85rem", fontWeight: 700 }}>
+          Profile ID: {initialData.profileNumber}
+        </div>
+      )}
       {/* Profile Photo Section */}
       <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
         <div style={{ 

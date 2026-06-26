@@ -25,6 +25,7 @@ model User {
   image         String?
   password      String?
   role          String          @default("SEEKER")
+  profileNumber String?         @unique
   isAdmin       Boolean         @default(false)
   isSuspended   Boolean         @default(false)
   lastLoginAt   DateTime?

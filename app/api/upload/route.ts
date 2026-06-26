@@ -2,6 +2,7 @@ import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
+import { buildUploadFileName, ensureProfileNumber } from '@/lib/profile';
 
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json()) as HandleUploadBody;
@@ -16,7 +17,11 @@ export async function POST(request: Request): Promise<NextResponse> {
           throw new Error('Unauthorized');
         }
 
+        const profileNumber = await ensureProfileNumber(session.user.id);
+        const fileName = buildUploadFileName(pathname.split('/').pop() || 'upload', profileNumber, clientPayload === 'resume' ? 'resume' : 'avatar');
+
         return {
+          pathname: fileName,
           allowedContentTypes: [
             'image/jpeg', 
             'image/png', 
@@ -28,17 +33,18 @@ export async function POST(request: Request): Promise<NextResponse> {
           ],
           tokenPayload: JSON.stringify({
             userId: session.user.id,
-            payload: clientPayload
+            payload: clientPayload,
+            profileNumber,
+            fileName,
           }),
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
         try {
-          const { userId, payload } = tokenPayload ? JSON.parse(tokenPayload) : { userId: null, payload: null };
+          const { userId, payload, profileNumber } = tokenPayload ? JSON.parse(tokenPayload) : { userId: null, payload: null, profileNumber: null };
           
           if (!userId) throw new Error('No user id in token');
 
-          // The clientPayload string dictates which field gets updated
           if (payload === 'resume') {
             await db.seekerProfile.upsert({
               where: { userId },
@@ -51,6 +57,7 @@ export async function POST(request: Request): Promise<NextResponse> {
               data: { image: blob.url },
             });
           }
+
         } catch (error) {
           console.error("Webhook processing error:", error);
           throw new Error('Could not update user database');

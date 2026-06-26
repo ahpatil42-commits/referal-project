@@ -26,7 +26,7 @@ interface Request {
     linkedinUrl: string | null;
     skills: any;
     resumeStoragePath: string | null;
-    user: { email: string; name: string | null };
+    user: { email: string; name: string | null; profileNumber: string | null };
   };
   messages: Message[];
   matchScore?: number;
@@ -76,6 +76,11 @@ function RequestCard({ req, onUpdate, currentUserId }: { req: Request; onUpdate:
             </div>
             <div>
               <p style={{ fontWeight: 700, color: "var(--color-text-primary)", fontSize: "0.95rem" }}>{seekerName}</p>
+              {req.seeker.user.profileNumber && (
+                <p style={{ fontSize: "0.75rem", color: "var(--color-primary-light)", fontWeight: 700, marginTop: "0.15rem" }}>
+                  ID: {req.seeker.user.profileNumber}
+                </p>
+              )}
               {req.seeker.headline && (
                 <p style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>{req.seeker.headline}</p>
               )}
@@ -218,10 +223,16 @@ function RequestCard({ req, onUpdate, currentUserId }: { req: Request; onUpdate:
           </a>
         )}
         {req.seeker.resumeStoragePath && (
-          <a href={req.seeker.resumeStoragePath} target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: "0.8rem", color: "var(--color-primary-light)", textDecoration: "none" }}>
-            📄 Download Resume
-          </a>
+          <>
+            <a href={req.seeker.resumeStoragePath} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: "0.8rem", color: "var(--color-primary-light)", textDecoration: "none" }}>
+              📄 View Resume
+            </a>
+            <a href={req.seeker.resumeStoragePath} download
+              style={{ fontSize: "0.8rem", color: "var(--color-accent)", textDecoration: "none" }}>
+              ⬇️ Download Resume
+            </a>
+          </>
         )}
       </div>
     </div>

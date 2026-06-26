@@ -18,7 +18,7 @@ export default async function ReferrerRequestsPage() {
         orderBy: { createdAt: "desc" },
         include: {
           seeker: {
-            include: { user: { select: { email: true, name: true } } },
+            include: { user: { select: { email: true, name: true, profileNumber: true } } },
           },
           messages: { orderBy: { createdAt: "asc" } },
         },

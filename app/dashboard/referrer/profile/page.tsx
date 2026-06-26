@@ -18,6 +18,13 @@ export default async function ReferrerProfilePage() {
       } 
     }
   });
+
+  if (!user?.profileNumber) {
+    await db.user.update({
+      where: { id: session.user.id },
+      data: { profileNumber: `REF-${Math.floor(100000 + Math.random() * 900000)}` },
+    });
+  }
   const profile = user?.referrerProfile;
 
   return (

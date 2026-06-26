@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { sendPasswordResetEmail, sendCorporateVerificationEmail, sendOTPEmail } from "@/lib/mail";
 
 import { authRateLimiter } from "@/lib/rate-limit";
+import { ensureProfileNumber } from "@/lib/profile";
 
 const RegisterSchema = z.object({
   email: z.string().email(),
@@ -56,7 +57,7 @@ export async function registerUser(data: {
 
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
-    await db.user.create({
+    const createdUser = await db.user.create({
       data: {
         email: data.email,
         password: hashedPassword,
@@ -76,6 +77,8 @@ export async function registerUser(data: {
           : {}),
       },
     });
+
+    await ensureProfileNumber(createdUser.id);
 
     // [TEMPORARILY DISABLED] Generate 6-digit OTPs
     // const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
