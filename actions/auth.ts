@@ -45,6 +45,28 @@ export async function forgotPassword(email: string) {
   }
 }
 
+export async function resendVerificationEmail(email: string) {
+  try {
+    const supabase = await createSSRClient();
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`,
+      }
+    });
+
+    if (error) {
+      console.error("[Server Action] resendVerificationEmail error:", error);
+      return { error: `Failed to send verification link: ${error.message}` };
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Server Action] resendVerificationEmail exception:", error);
+    return { error: `Something went wrong: ${error.message}` };
+  }
+}
+
 export async function resetPassword(password: string, access_token: string, refresh_token: string) {
   try {
     const supabase = await createSSRClient();

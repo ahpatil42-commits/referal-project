@@ -16,24 +16,31 @@ export default async function PendingVerificationPage() {
 
   const supabase = createAdminClient();
   let userEmail: string | null = null;
-
+  let parsed: any;
+  
   try {
-    const parsed = JSON.parse(token);
-    const accessToken = Array.isArray(parsed) ? parsed[0] : parsed?.access_token;
-    if (accessToken) {
-      const { data } = await supabase.auth.getUser(accessToken);
-      if (!data?.user) redirect("/login");
-
-      // Already verified — send to dashboard
-      if (data.user.email_confirmed_at) redirect("/dashboard");
-
-      userEmail = data.user.email ?? null;
-    } else {
-      redirect("/login");
-    }
+    parsed = JSON.parse(token);
   } catch {
+    // Invalid token format
+  }
+
+  const accessToken = Array.isArray(parsed) ? parsed[0] : parsed?.access_token;
+  
+  if (!accessToken) {
     redirect("/login");
   }
+
+  const { data } = await supabase.auth.getUser(accessToken);
+  if (!data?.user) {
+    redirect("/login");
+  }
+
+  // Already verified — send to dashboard
+  if (data.user.email_confirmed_at) {
+    redirect("/dashboard");
+  }
+
+  userEmail = data.user.email ?? null;
 
   return (
     <div className="flex-center z-content" style={{ minHeight: "100vh", padding: "2rem" }}>

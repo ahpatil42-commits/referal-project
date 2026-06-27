@@ -7,7 +7,8 @@ import * as z from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { loginUser } from "@/actions/auth";
+import { loginUser, resendVerificationEmail } from "@/actions/auth";
+import { toast } from "sonner";
 
 const LoginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -21,10 +22,13 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [serverError, setServerError] = useState<string | null>(null);
+  const [isUnverified, setIsUnverified] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
@@ -33,11 +37,15 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormValues) => {
     setServerError(null);
+    setIsUnverified(false);
     try {
       const response = await loginUser({ email: data.email, password: data.password });
       
       if (response.error) {
         setServerError(response.error);
+        if (response.error.includes("verify your email address")) {
+          setIsUnverified(true);
+        }
         return;
       }
 
@@ -127,9 +135,31 @@ export default function LoginPage() {
 
         {/* Error Alert */}
         {serverError && (
-          <div className="alert-error animate-fade-in" style={{ marginBottom: "1.25rem" }}>
-            <span>⚠</span>
-            <span>{serverError}</span>
+          <div className="alert-error animate-fade-in" style={{ marginBottom: "1.25rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span>⚠</span>
+              <span>{serverError}</span>
+            </div>
+            {isUnverified && (
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsResending(true);
+                  const res = await resendVerificationEmail(getValues("email"));
+                  setIsResending(false);
+                  if (res.error) {
+                    toast.error(res.error);
+                  } else {
+                    toast.success("Verification email sent! Check your inbox.");
+                  }
+                }}
+                disabled={isResending}
+                className="btn-secondary"
+                style={{ alignSelf: "flex-start", padding: "0.3rem 0.75rem", fontSize: "0.8rem", marginTop: "0.25rem" }}
+              >
+                {isResending ? "Sending..." : "Resend Verification Email"}
+              </button>
+            )}
           </div>
         )}
 
