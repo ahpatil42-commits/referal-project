@@ -1,46 +1,48 @@
+"use client";
+
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { SignOutButton } from "./SignOutButton";
-import { createAdminClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
 
-export default async function PendingVerificationPage() {
-  // Read the Supabase session token from cookies (server-side)
-  const cookieStore = await cookies();
-  const token = cookieStore.getAll()
-    .find((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"))?.value;
+export default function PendingVerificationPage() {
+  const router = useRouter();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!token) {
-    redirect("/login");
+  useEffect(() => {
+    async function checkSession() {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error || !data.session) {
+        // Not logged in or no valid session (GoTrue returns error if email not confirmed during login)
+        // If they have no session, they shouldn't be on this page.
+        router.push("/login");
+        return;
+      }
+
+      if (data.session.user.email_confirmed_at) {
+        // Already verified — send to dashboard
+        router.push("/dashboard");
+        return;
+      }
+
+      setUserEmail(data.session.user.email ?? null);
+      setIsLoading(false);
+    }
+    
+    checkSession();
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex-center z-content" style={{ minHeight: "100vh" }}>
+        <div className="btn-spinner" style={{ width: "32px", height: "32px" }}></div>
+      </div>
+    );
   }
-
-  const supabase = createAdminClient();
-  let userEmail: string | null = null;
-  let parsed: any;
-  
-  try {
-    parsed = JSON.parse(token);
-  } catch {
-    // Invalid token format
-  }
-
-  const accessToken = Array.isArray(parsed) ? parsed[0] : parsed?.access_token;
-  
-  if (!accessToken) {
-    redirect("/login");
-  }
-
-  const { data } = await supabase.auth.getUser(accessToken);
-  if (!data?.user) {
-    redirect("/login");
-  }
-
-  // Already verified — send to dashboard
-  if (data.user.email_confirmed_at) {
-    redirect("/dashboard");
-  }
-
-  userEmail = data.user.email ?? null;
 
   return (
     <div className="flex-center z-content" style={{ minHeight: "100vh", padding: "2rem" }}>
@@ -59,7 +61,7 @@ export default async function PendingVerificationPage() {
           <p style={{ fontSize: "0.875rem", color: "var(--color-text-muted)", margin: 0 }}>
             Didn&apos;t receive an email? Check your spam folder or{" "}
             <Link href="/login" className="text-link">return to login</Link>{" "}
-            and try again.
+            and try the new Resend button there!
           </p>
         </div>
 
