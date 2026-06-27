@@ -28,6 +28,7 @@ export async function auth() {
     }
 
     return {
+      expires: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
       user: {
         id: dbUser.id,
         email: dbUser.email,
