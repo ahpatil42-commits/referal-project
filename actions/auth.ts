@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import crypto from "crypto";
 import { sendPasswordResetEmail, sendCorporateVerificationEmail, sendOTPEmail } from "@/lib/mail";
+import { createClient } from "@supabase/supabase-js";
 
 import { authRateLimiter } from "@/lib/rate-limit";
 import { ensureProfileNumber } from "@/lib/profile";
@@ -57,6 +58,25 @@ export async function registerUser(data: {
 
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
+    // 1. Sign up via Supabase (Server-side fetch prevents browser NetworkErrors)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: { role: data.role },
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`,
+      },
+    });
+
+    if (signUpError) {
+      return { error: signUpError.message };
+    }
+
+    // 2. Create Prisma User
     const createdUser = await db.user.create({
       data: {
         email: data.email,

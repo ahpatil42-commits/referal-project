@@ -7,7 +7,6 @@ import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerUser } from "@/actions/auth";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
 const RegisterSchema = z
@@ -57,23 +56,8 @@ export default function RegisterPage() {
 
     const fullMobile = data.mobile ? `${data.countryCode}${data.mobile}` : undefined;
 
-    // 1. Sign up via Supabase — this sends the confirmation email automatically
-    const supabase = createClient();
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: { role: "SEEKER" },
-        emailRedirectTo: `${window.location.origin}/login`,
-      },
-    });
-
-    if (signUpError) {
-      setServerError(signUpError.message);
-      return;
-    }
-
-    // 2. Also create the Prisma DB record (profile, role, mobile etc.)
+    // 1. Send all data to Server Action
+    // This bypasses the browser connecting to Supabase directly, fixing NetworkError!
     const response = await registerUser({ ...data, mobile: fullMobile, role: "SEEKER" });
 
     if (response.error) {
