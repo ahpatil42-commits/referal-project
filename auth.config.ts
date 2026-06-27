@@ -15,11 +15,11 @@ import LinkedIn from "next-auth/providers/linkedin";
  * callback) lives in auth.ts and is used by Server Components and
  * Server Actions which run in the Node.js runtime.
  */
-export const authConfig: NextAuthConfig = {
+export const authConfig = {
   // No adapter here – adapter is Node-only (PrismaAdapter)
   trustHost: true,
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
     maxAge: 7 * 24 * 60 * 60, // 7 days
   },
   pages: {
@@ -36,8 +36,6 @@ export const authConfig: NextAuthConfig = {
         password: { label: "Password", type: "password" },
       },
       async authorize() {
-        // This will never actually be called from middleware –
-        // sign-in goes through the full auth.ts config.
         return null;
       },
     }),
@@ -55,23 +53,21 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account, trigger, session }) {
+    jwt({ token, user, account, trigger, session }: any) {
       if (user) {
         token.id = user.id as string;
-        token.role = (user as any).role || "SEEKER";
-        token.isAdmin = (user as any).isAdmin || false;
+        token.role = user.role || "SEEKER";
+        token.isAdmin = user.isAdmin || false;
 
-        // Strip large default fields to prevent HTTP 431 errors
         delete token.name;
         delete token.email;
         delete token.picture;
         delete token.sub;
 
-        // For OAuth providers, trust provider-verified email
         if (account && account.provider !== "credentials") {
-          token.emailVerified = (user as any).emailVerified ?? new Date();
+          token.emailVerified = user.emailVerified ?? new Date();
         } else {
-          token.emailVerified = (user as any).emailVerified || null;
+          token.emailVerified = user.emailVerified || null;
         }
       }
       if (trigger === "update" && session?.role) {
@@ -79,30 +75,16 @@ export const authConfig: NextAuthConfig = {
       }
       return token;
     },
-    async session({ session, token }) {
+    session({ session, token }: any) {
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as "SEEKER" | "REFERRER";
-        // @ts-expect-error - Custom property added to session
-        session.user.isAdmin = token.isAdmin as boolean;
+        session.user.id = token.id;
+        session.user.role = token.role;
+        session.user.isAdmin = token.isAdmin;
         session.user.emailVerified = token.emailVerified
-          ? new Date(token.emailVerified as string)
+          ? new Date(token.emailVerified)
           : null;
       }
       return session;
     },
-
-    // authorized callback is used by middleware to check auth
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isDashboard = nextUrl.pathname.startsWith("/dashboard");
-
-      if (isDashboard) {
-        // Returning true/false from here controls access.
-        // We return true to let our custom middleware logic handle redirects.
-        return true;
-      }
-      return true;
-    },
   },
-};
+} satisfies NextAuthConfig;
