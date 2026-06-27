@@ -74,7 +74,13 @@ export default function RegisterPage() {
     }
 
     // 3. Show the "check your email" message
-    setServerSuccess("Account created! Please check your email to verify your account before logging in.");
+    setServerSuccess(response.success || "Account created! Please check your email to verify your account before logging in.");
+    
+    if (response.redirect) {
+      setTimeout(() => {
+        router.push(response.redirect);
+      }, 3000);
+    }
   };
 
   const signInWithOAuth = async (provider: "google" | "linkedin_oidc" | "facebook") => {

@@ -39,7 +39,7 @@ export default async function SettingsPage() {
 
       <AccountVerificationSettings 
         email={user.email}
-        emailVerified={!!user.emailVerified}
+        emailVerified={!!session.user.emailVerified}
         mobile={user.mobile}
         mobileVerified={!!user.mobileVerified}
       />

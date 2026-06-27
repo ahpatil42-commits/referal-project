@@ -21,9 +21,7 @@ export default async function DashboardLayout({
     select: { image: true, emailVerified: true, termsAcceptedAt: true }
   });
 
-  if (!user?.emailVerified) {
-    redirect("/pending-verification");
-  }
+
 
   return (
     <>
