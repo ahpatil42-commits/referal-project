@@ -54,7 +54,7 @@ export default async function SeekerRequestsPage() {
 
       {requests.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {requests.map((req) => {
+          {JSON.parse(JSON.stringify(requests)).map((req: any) => {
             const refName =
               req.referrer.user.name || req.referrer.user.email.split("@")[0];
             return (

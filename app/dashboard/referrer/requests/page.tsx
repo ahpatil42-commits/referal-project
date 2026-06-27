@@ -35,6 +35,9 @@ export default async function ReferrerRequestsPage() {
     })
   );
 
+  // Serialize to plain JSON to prevent Next.js Server Component render errors on Vercel
+  const safeRequests = JSON.parse(JSON.stringify(requestsWithScores));
+
   return (
     <div style={{ maxWidth: "1100px" }}>
       <div style={{ marginBottom: "2rem" }}>
@@ -57,7 +60,7 @@ export default async function ReferrerRequestsPage() {
       )}
 
       {requests.length > 0 && (
-        <ReferrerRequestsClient requests={requestsWithScores as any} currentUserId={session.user.id} />
+        <ReferrerRequestsClient requests={safeRequests} currentUserId={session.user.id} />
       )}
     </div>
   );
