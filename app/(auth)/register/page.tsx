@@ -7,6 +7,7 @@ import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerUser } from "@/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
 const RegisterSchema = z
