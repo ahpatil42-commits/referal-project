@@ -1,17 +1,30 @@
-import DOMPurify from 'isomorphic-dompurify';
+const DANGEROUS_BLOCK_RE =
+  /<\s*(script|style|iframe|object|embed|svg|math)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi;
+const TAG_RE = /<[^>]*>/g;
+const CONTROL_CHARS_RE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+
+function stripMarkup(value: string): string {
+  return value
+    .replace(DANGEROUS_BLOCK_RE, "")
+    .replace(TAG_RE, "")
+    .replace(CONTROL_CHARS_RE, "");
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 
 export function sanitizeHtml(html: string): string {
   if (!html) return "";
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li'],
-    ALLOWED_ATTR: ['href', 'target', 'rel'],
-  });
+  return escapeHtml(stripMarkup(html));
 }
 
 export function sanitizeText(text: string): string {
   if (!text) return "";
-  return DOMPurify.sanitize(text, {
-    ALLOWED_TAGS: [], // Strip all HTML tags for pure text
-    ALLOWED_ATTR: [],
-  });
+  return stripMarkup(text);
 }

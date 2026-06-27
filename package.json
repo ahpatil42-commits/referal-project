@@ -31,7 +31,6 @@
     "@vercel/blob": "^2.4.1",
     "bcryptjs": "^2.4.3",
     "cheerio": "^1.2.0",
-    "isomorphic-dompurify": "^3.18.0",
     "lucide-react": "^1.21.0",
     "mammoth": "^1.12.0",
     "next": "^15.3.4",
