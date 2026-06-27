@@ -7,7 +7,7 @@ import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { registerUser } from "@/actions/auth";
-import { signIn } from "next-auth/react";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
 const RegisterSchema = z
@@ -56,17 +56,41 @@ export default function RegisterPage() {
     setServerSuccess(null);
 
     const fullMobile = data.mobile ? `${data.countryCode}${data.mobile}` : undefined;
+
+    // 1. Sign up via Supabase — this sends the confirmation email automatically
+    const supabase = createClient();
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: { role: "SEEKER" },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    });
+
+    if (signUpError) {
+      setServerError(signUpError.message);
+      return;
+    }
+
+    // 2. Also create the Prisma DB record (profile, role, mobile etc.)
     const response = await registerUser({ ...data, mobile: fullMobile, role: "SEEKER" });
 
     if (response.error) {
       setServerError(response.error);
-    } else if (response.success && response.redirect) {
-      setServerSuccess(response.success);
-      setTimeout(() => router.push(response.redirect!), 1500);
-    } else if (response.success) {
-      setServerSuccess(response.success);
-      setTimeout(() => router.push("/login"), 1500);
+      return;
     }
+
+    // 3. Show the "check your email" message
+    setServerSuccess("Account created! Please check your email to verify your account before logging in.");
+  };
+
+  const signInWithOAuth = async (provider: "google" | "linkedin_oidc" | "facebook") => {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    });
   };
 
   return (
@@ -283,7 +307,7 @@ export default function RegisterPage() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <button onClick={() => signIn("google", { callbackUrl: "/dashboard" })} className="btn-secondary" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <button onClick={() => signInWithOAuth("google")} className="btn-secondary" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -293,13 +317,13 @@ export default function RegisterPage() {
             Google
           </button>
           <div style={{ display: "flex", gap: "0.75rem" }}>
-            <button onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })} className="btn-secondary" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button onClick={() => signInWithOAuth("linkedin_oidc")} className="btn-secondary" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#0A66C2">
                 <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
               </svg>
               LinkedIn
             </button>
-            <button onClick={() => signIn("facebook", { callbackUrl: "/dashboard" })} className="btn-secondary" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button onClick={() => signInWithOAuth("facebook")} className="btn-secondary" style={{ width: "100%", justifyContent: "center", display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>

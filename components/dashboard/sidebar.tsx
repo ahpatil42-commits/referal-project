@@ -18,6 +18,7 @@ const SEEKER_NAV: NavItem[] = [
   { href: "/dashboard/seeker",          label: "Overview",         icon: "⊞" },
   { href: "/dashboard/seeker/browse",   label: "Browse Referrers", icon: "⊕" },
   { href: "/dashboard/seeker/requests", label: "My Requests",      icon: "◫" },
+  { href: "/dashboard/seeker/messages", label: "Messages",         icon: "✉" },
   { href: "/dashboard/seeker/profile",  label: "My Profile",       icon: "◉" },
   { href: "/dashboard/settings",        label: "Settings",         icon: "⚙️" },
 ];

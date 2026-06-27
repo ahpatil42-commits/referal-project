@@ -64,7 +64,6 @@ export async function registerUser(data: {
         name: data.email.split("@")[0],
         role: data.role,
         mobile: data.mobile,
-        emailVerified: new Date(), // Temporarily bypass email verification
         termsAcceptedAt: new Date(),
         ...(data.role === "REFERRER" && data.corporateEmail
           ? {

@@ -1,39 +1,39 @@
-import { NextResponse } from "next/server";
-import NextAuth from "next-auth";
-import { authConfig } from "@/auth.config";
+import { NextResponse, type NextRequest } from "next/server";
+import { createMiddlewareClient } from "@/lib/supabase/middleware";
 import { apiRateLimiter } from "@/lib/rate-limit-edge";
 
 /**
  * Edge-compatible middleware.
  *
- * IMPORTANT: This file runs in Vercel's Edge Runtime.
- * It MUST NOT import anything that depends on Node.js APIs
- * (PrismaClient, node:crypto, bcryptjs, etc.).
+ * Uses the Supabase SSR client (cookie-based JWTs) instead of NextAuth.
+ * The Supabase client is Edge-Runtime safe — it never touches Node.js APIs.
  *
- * We use the edge-safe authConfig (from auth.config.ts) to read the
- * JWT session.  The full auth.ts (with PrismaAdapter) is only used
- * by Server Components and Server Actions in the Node.js runtime.
+ * Auth logic is identical to before:
+ *  - Unauthenticated → /login
+ *  - Email not confirmed → /pending-verification
+ *  - Role-based dashboard routing (SEEKER / REFERRER)
+ *  - Rate-limiting for non-auth API routes
  */
-const { auth } = NextAuth(authConfig);
+export default async function middleware(request: NextRequest) {
+  const { nextUrl } = request;
 
-export default auth(async (req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
-  const role: string | undefined = req.auth?.user?.role;
-
+  // ── Route classification ──────────────────────────────────────────────────
   const isDashboardRoute = nextUrl.pathname.startsWith("/dashboard");
-  const isSeekerRoute = nextUrl.pathname.startsWith("/dashboard/seeker");
-  const isReferrerRoute = nextUrl.pathname.startsWith("/dashboard/referrer");
-  const isAuthRoute =
-    nextUrl.pathname === "/login" ||
-    nextUrl.pathname === "/register";
-  const isApiRoute = nextUrl.pathname.startsWith("/api");
+  const isSeekerRoute    = nextUrl.pathname.startsWith("/dashboard/seeker");
+  const isReferrerRoute  = nextUrl.pathname.startsWith("/dashboard/referrer");
+  const isAuthRoute      =
+    nextUrl.pathname === "/login" || nextUrl.pathname === "/register";
+  const isApiRoute       = nextUrl.pathname.startsWith("/api");
 
-  // Rate Limiting for API routes (excluding auth and webhooks)
-  if (isApiRoute && !nextUrl.pathname.startsWith("/api/auth") && !nextUrl.pathname.startsWith("/api/webhooks")) {
-    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+  // ── Rate limiting for API routes (excluding auth & webhooks) ──────────────
+  if (
+    isApiRoute &&
+    !nextUrl.pathname.startsWith("/api/auth") &&
+    !nextUrl.pathname.startsWith("/api/webhooks")
+  ) {
+    const ip = request.headers.get("x-forwarded-for") || "127.0.0.1";
     const { success, limit, remaining } = await apiRateLimiter.check(ip);
-    
+
     if (!success) {
       return new NextResponse("Too Many Requests", {
         status: 429,
@@ -45,59 +45,95 @@ export default auth(async (req) => {
     }
   }
 
-  // Redirect authenticated users away from auth pages
+  // ── Supabase session ──────────────────────────────────────────────────────
+  // createMiddlewareClient returns a response that carries any refreshed
+  // Supabase cookies — we MUST return that response (or one derived from it)
+  // so the browser receives the updated tokens.
+  const { supabase, response } = createMiddlewareClient(request);
+
+  // getUser() validates the JWT against the Supabase Auth server
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isLoggedIn       = !!user;
+  const emailConfirmed   = !!user?.email_confirmed_at;
+  // Role is stored in Supabase user_metadata when we sign up
+  const role: string     = (user?.user_metadata?.role as string) ?? "SEEKER";
+
+  // ── Redirect authenticated users away from auth pages ────────────────────
   if (isAuthRoute && isLoggedIn) {
-    // Enforce email verification requirement
-    if (!req.auth?.user?.emailVerified) {
-      return NextResponse.redirect(new URL("/pending-verification", nextUrl));
+    if (!emailConfirmed) {
+      return NextResponse.redirect(
+        new URL("/pending-verification", nextUrl),
+        { headers: response.headers }
+      );
     }
     if (role === "REFERRER") {
-      return NextResponse.redirect(new URL("/dashboard/referrer", nextUrl));
+      return NextResponse.redirect(
+        new URL("/dashboard/referrer", nextUrl),
+        { headers: response.headers }
+      );
     }
-    return NextResponse.redirect(new URL("/dashboard/seeker", nextUrl));
-  }
-
-  // Redirect unauthenticated users trying to access dashboard
-  if (isDashboardRoute && !isLoggedIn) {
-    const callbackUrl = encodeURIComponent(nextUrl.pathname);
     return NextResponse.redirect(
-      new URL(`/login?callbackUrl=${callbackUrl}`, nextUrl)
+      new URL("/dashboard/seeker", nextUrl),
+      { headers: response.headers }
     );
   }
 
-  // Role-based access control for authenticated users on dashboard routes
+  // ── Redirect unauthenticated users away from dashboard ───────────────────
+  if (isDashboardRoute && !isLoggedIn) {
+    const callbackUrl = encodeURIComponent(nextUrl.pathname);
+    return NextResponse.redirect(
+      new URL(`/login?callbackUrl=${callbackUrl}`, nextUrl),
+      { headers: response.headers }
+    );
+  }
+
+  // ── Role-based access control for authenticated dashboard users ───────────
   if (isLoggedIn && (isDashboardRoute || nextUrl.pathname.startsWith("/portal-admin"))) {
-    // Enforce email verification requirement
-    if (!req.auth?.user?.emailVerified) {
-      return NextResponse.redirect(new URL("/pending-verification", nextUrl));
+    // Email must be verified
+    if (!emailConfirmed) {
+      return NextResponse.redirect(
+        new URL("/pending-verification", nextUrl),
+        { headers: response.headers }
+      );
     }
 
-    // Redirect generic /dashboard → role-specific dashboard
+    // /dashboard → redirect to role-specific dashboard
     if (
       nextUrl.pathname === "/dashboard" ||
       nextUrl.pathname === "/dashboard/"
     ) {
-      if (role === "REFERRER") {
-        return NextResponse.redirect(
-          new URL("/dashboard/referrer", nextUrl)
-        );
-      }
-      return NextResponse.redirect(new URL("/dashboard/seeker", nextUrl));
+      return NextResponse.redirect(
+        new URL(
+          role === "REFERRER" ? "/dashboard/referrer" : "/dashboard/seeker",
+          nextUrl
+        ),
+        { headers: response.headers }
+      );
     }
 
-    // SEEKER trying to access referrer routes → redirect to their dashboard
+    // SEEKER trying to access referrer routes
     if (isReferrerRoute && role !== "REFERRER") {
-      return NextResponse.redirect(new URL("/dashboard/seeker", nextUrl));
+      return NextResponse.redirect(
+        new URL("/dashboard/seeker", nextUrl),
+        { headers: response.headers }
+      );
     }
 
-    // REFERRER trying to access seeker routes → redirect to their dashboard
+    // REFERRER trying to access seeker routes
     if (isSeekerRoute && role !== "SEEKER") {
-      return NextResponse.redirect(new URL("/dashboard/referrer", nextUrl));
+      return NextResponse.redirect(
+        new URL("/dashboard/referrer", nextUrl),
+        { headers: response.headers }
+      );
     }
   }
 
-  return NextResponse.next();
-});
+  // Forward the response (important: carries refreshed Supabase cookies)
+  return response;
+}
 
 export const config = {
   matcher: [

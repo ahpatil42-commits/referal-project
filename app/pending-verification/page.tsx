@@ -1,18 +1,38 @@
 import Link from "next/link";
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "./SignOutButton";
+import { createAdminClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 
 export default async function PendingVerificationPage() {
-  const session = await auth();
+  // Read the Supabase session token from cookies (server-side)
+  const cookieStore = await cookies();
+  const token = cookieStore.getAll()
+    .find((c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token"))?.value;
 
-  if (!session?.user?.id) {
+  if (!token) {
     redirect("/login");
   }
 
-  // emailVerified is manually populated in auth.ts 
-  if (session.user.emailVerified) {
-    redirect("/dashboard");
+  const supabase = createAdminClient();
+  let userEmail: string | null = null;
+
+  try {
+    const parsed = JSON.parse(token);
+    const accessToken = Array.isArray(parsed) ? parsed[0] : parsed?.access_token;
+    if (accessToken) {
+      const { data } = await supabase.auth.getUser(accessToken);
+      if (!data?.user) redirect("/login");
+
+      // Already verified — send to dashboard
+      if (data.user.email_confirmed_at) redirect("/dashboard");
+
+      userEmail = data.user.email ?? null;
+    } else {
+      redirect("/login");
+    }
+  } catch {
+    redirect("/login");
   }
 
   return (
@@ -23,13 +43,16 @@ export default async function PendingVerificationPage() {
           Verify your email
         </h1>
         <p style={{ color: "var(--color-text-secondary)", marginBottom: "2rem", lineHeight: 1.6 }}>
-          We've sent a verification link to <strong>{session.user.email}</strong>.
-          Please check your inbox (and terminal console) and click the link to activate your account.
+          We&apos;ve sent a verification link to{" "}
+          <strong>{userEmail}</strong>.{" "}
+          Please check your inbox and click the link to activate your account.
         </p>
 
         <div style={{ padding: "1.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "12px", border: "1px solid var(--glass-border)", marginBottom: "2rem" }}>
           <p style={{ fontSize: "0.875rem", color: "var(--color-text-muted)", margin: 0 }}>
-            <strong>Developer Note:</strong> Since this is running locally without an SMTP provider, the verification link was printed to your terminal console running <code style={{ color: "var(--color-primary-light)" }}>npm run dev</code>.
+            Didn&apos;t receive an email? Check your spam folder or{" "}
+            <Link href="/login" className="text-link">return to login</Link>{" "}
+            and try again.
           </p>
         </div>
 
