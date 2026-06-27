@@ -7,6 +7,7 @@ import { z } from "zod";
 import crypto from "crypto";
 import { sendPasswordResetEmail, sendCorporateVerificationEmail, sendOTPEmail } from "@/lib/mail";
 import { createClient } from "@supabase/supabase-js";
+import { createSSRClient } from "@/lib/supabase/server";
 
 import { authRateLimiter } from "@/lib/rate-limit";
 import { ensureProfileNumber } from "@/lib/profile";
@@ -25,6 +26,79 @@ const RegisterSchema = z.object({
 
 export async function signInWithProvider(provider: "google" | "facebook" | "linkedin") {
   await signIn(provider, { redirectTo: "/dashboard" });
+}
+
+export async function forgotPassword(email: string) {
+  try {
+    const supabase = await createSSRClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password`,
+    });
+    if (error) {
+      console.error("[Server Action] forgotPassword error:", error);
+      return { error: `Failed to send reset link: ${error.message}` };
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Server Action] forgotPassword exception:", error);
+    return { error: `Something went wrong: ${error.message}` };
+  }
+}
+
+export async function resetPassword(password: string, access_token: string, refresh_token: string) {
+  try {
+    const supabase = await createSSRClient();
+    
+    // Set the session using the tokens from the URL hash
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token,
+      refresh_token,
+    });
+
+    if (sessionError) {
+      console.error("[Server Action] resetPassword session error:", sessionError);
+      return { error: `Invalid or expired reset link: ${sessionError.message}` };
+    }
+
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      console.error("[Server Action] resetPassword error:", error);
+      return { error: `Failed to reset password: ${error.message}` };
+    }
+    
+    await supabase.auth.signOut();
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Server Action] resetPassword exception:", error);
+    return { error: `Something went wrong: ${error.message}` };
+  }
+}
+
+export async function loginUser(data: { email: string; password: string }) {
+  try {
+    const supabase = await createSSRClient();
+
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (error) {
+      console.error("[Server Action] Supabase login error:", error);
+      return { error: `Server failed to connect to Auth: ${error.message}` };
+    }
+
+    // Enforce mandatory email verification
+    if (!authData.user?.email_confirmed_at) {
+      await supabase.auth.signOut();
+      return { error: "Please verify your email address before logging in. Check your inbox for a confirmation link." };
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[Server Action] loginUser exception:", error);
+    return { error: `Something went wrong: ${error.message || "Unknown error"}` };
+  }
 }
 
 export async function registerUser(data: {

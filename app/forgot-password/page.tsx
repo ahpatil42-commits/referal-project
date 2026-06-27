@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { forgotPassword } from "@/actions/auth";
 
 export default function ForgotPasswordPage() {
   const [isPending, startTransition] = useTransition();
@@ -17,12 +17,11 @@ export default function ForgotPasswordPage() {
 
     startTransition(async () => {
       try {
-        const supabase = createClient();
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
+        const response = await forgotPassword(email);
 
-        if (error) throw new Error(error.message);
+        if (response.error) {
+          throw new Error(response.error);
+        }
 
         setIsSubmitted(true);
         toast.success("Reset link sent to your email address!");

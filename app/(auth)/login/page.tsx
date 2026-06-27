@@ -7,6 +7,7 @@ import * as z from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { loginUser } from "@/actions/auth";
 
 const LoginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -33,23 +34,10 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setServerError(null);
     try {
-      const supabase = createClient();
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
-
-      if (error) {
-        setServerError(error.message ?? "Invalid email or password. Please try again.");
-        return;
-      }
-
-      // Enforce mandatory email verification
-      if (!authData.user?.email_confirmed_at) {
-        await supabase.auth.signOut();
-        setServerError(
-          "Please verify your email address before logging in. Check your inbox for a confirmation link."
-        );
+      const response = await loginUser({ email: data.email, password: data.password });
+      
+      if (response.error) {
+        setServerError(response.error);
         return;
       }
 

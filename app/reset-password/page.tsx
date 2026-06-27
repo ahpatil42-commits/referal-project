@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { resetPassword } from "@/actions/auth";
 
 function ResetPasswordForm() {
   const [isPending, startTransition] = useTransition();
@@ -16,23 +16,21 @@ function ResetPasswordForm() {
   const [sessionReady, setSessionReady] = useState(false);
   const [sessionError, setSessionError] = useState(false);
 
-  // Supabase puts the access_token + refresh_token in the URL hash after the
-  // user clicks the reset link. We exchange them for a session here so that
-  // updateUser() works.
+  const [tokens, setTokens] = useState<{access_token: string, refresh_token: string} | null>(null);
+
   useEffect(() => {
-    const supabase = createClient();
+    // Parse the tokens from the URL hash
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "PASSWORD_RECOVERY" && session) {
-          setSessionReady(true);
-        } else if (!session) {
-          setSessionError(true);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    if (access_token && refresh_token) {
+      setTokens({ access_token, refresh_token });
+      setSessionReady(true);
+    } else {
+      setSessionError(true);
+    }
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,12 +46,15 @@ function ResetPasswordForm() {
 
     startTransition(async () => {
       try {
-        const supabase = createClient();
-        const { error } = await supabase.auth.updateUser({ password });
-        if (error) throw new Error(error.message);
+        if (!tokens) throw new Error("Missing reset tokens");
+        
+        const response = await resetPassword(password, tokens.access_token, tokens.refresh_token);
+        
+        if (response.error) {
+          throw new Error(response.error);
+        }
 
         toast.success("Password reset successfully! You can now log in.");
-        await supabase.auth.signOut();
         router.push("/login");
       } catch (err: any) {
         toast.error(err.message || "Failed to reset password");
