@@ -24,9 +24,7 @@ const RegisterSchema = z.object({
   mobile: z.string().optional(),
 });
 
-export async function signInWithProvider(provider: "google" | "facebook" | "linkedin") {
-  await signIn(provider, { redirectTo: "/dashboard" });
-}
+
 
 export async function forgotPassword(email: string) {
   try {
