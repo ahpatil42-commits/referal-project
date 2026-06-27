@@ -73,7 +73,8 @@ export async function registerUser(data: {
     });
 
     if (signUpError) {
-      return { error: signUpError.message };
+      console.error("[Server Action] Supabase signUp error:", signUpError);
+      return { error: `Server failed to connect to Auth: ${signUpError.message}` };
     }
 
     // 2. Create Prisma User
