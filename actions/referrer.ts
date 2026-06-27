@@ -165,12 +165,16 @@ export async function updateRequestStatus(
         }
       });
 
-      // Send Real-Time Pusher Notification
-      await pusherServer.trigger(`user-${updated.seeker.userId}`, "new-notification", {
-        title: `Request ${status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}`,
-        message: `Your request for ${updated.jobTitle} at ${updated.company} was ${status.toLowerCase()}.`,
-        link: "/dashboard/seeker/requests"
-      });
+      // Send Real-Time Pusher Notification (fail gracefully if not configured)
+      try {
+        await pusherServer.trigger(`user-${updated.seeker.userId}`, "new-notification", {
+          title: `Request ${status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}`,
+          message: `Your request for ${updated.jobTitle} at ${updated.company} was ${status.toLowerCase()}.`,
+          link: "/dashboard/seeker/requests"
+        });
+      } catch (pusherError) {
+        console.warn("Pusher trigger failed:", pusherError);
+      }
     }
 
     revalidatePath("/dashboard/referrer/requests");
