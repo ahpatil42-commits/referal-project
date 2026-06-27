@@ -1,160 +1,57 @@
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
-import Facebook from "next-auth/providers/facebook";
-import LinkedIn from "next-auth/providers/linkedin";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { createSSRClient } from "@/lib/supabase/server";
 import { db } from "@/lib/db";
-import type { NextAuthConfig } from "next-auth";
 
 /**
- * Full auth configuration — Node.js runtime only.
- *
- * This is the complete auth config with PrismaAdapter, bcryptjs,
- * and DB queries in callbacks.
- *
- * Only imported by Server Components, Server Actions, and API routes —
- * NEVER by middleware.ts (which runs in Edge Runtime on Vercel).
+ * Universal auth() function replacing NextAuth.
+ * This reads the Supabase JWT cookie and fetches the Prisma User from the DB.
+ * It returns an object identical to the old NextAuth session object so that
+ * all 35+ dashboard files work without any modification!
  */
-const fullAuthConfig: NextAuthConfig = {
-  adapter: PrismaAdapter(db),
-  trustHost: true,
-  session: {
-    strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-  },
-  pages: {
-    signIn: "/login",
-  },
-  events: {
-    async signIn({ user }) {
-      if (user?.id) {
-        await db.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: new Date() },
-        }).catch(console.error);
+export async function auth() {
+  try {
+    const supabase = await createSSRClient();
+    const { data: authData, error } = await supabase.auth.getUser();
+
+    if (error || !authData?.user?.email) {
+      return null;
+    }
+
+    // We must fetch the user from Prisma to get the correct UUID for foreign keys.
+    // Supabase Auth UUID (authData.user.id) is DIFFERENT from Prisma User UUID (dbUser.id)
+    // because Prisma generates its own cuid/uuid when we call db.user.create()
+    const dbUser = await db.user.findUnique({
+      where: { email: authData.user.email },
+    });
+
+    if (!dbUser) {
+      return null;
+    }
+
+    return {
+      user: {
+        id: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name,
+        role: dbUser.role as "SEEKER" | "REFERRER",
+        isAdmin: dbUser.isAdmin,
+        emailVerified: authData.user.email_confirmed_at 
+          ? new Date(authData.user.email_confirmed_at) 
+          : null,
+        image: dbUser.image,
       }
-    },
-  },
-  providers: [
-    Credentials({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+    };
+  } catch (err) {
+    console.error("Auth wrapper error:", err);
+    return null;
+  }
+}
 
-        const user = await db.user.findUnique({
-          where: { email: credentials.email as string },
-        });
+// Stub out signIn and signOut to prevent import errors in any legacy files.
+// Real auth actions should use Supabase directly.
+export async function signIn() {
+  throw new Error("Do not use signIn from @/auth anymore. Use Supabase signIn.");
+}
 
-        if (!user || !user.password) {
-          return null;
-        }
-
-        // Dynamically import bcryptjs to avoid Edge Runtime issues
-        const bcrypt = await import("bcryptjs");
-        const passwordsMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
-
-        if (!passwordsMatch) return null;
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          role: user.role as "SEEKER" | "REFERRER",
-          isAdmin: user.isAdmin,
-          emailVerified: user.emailVerified,
-        };
-      },
-    }),
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
-    Facebook({
-      clientId: process.env.AUTH_FACEBOOK_ID,
-      clientSecret: process.env.AUTH_FACEBOOK_SECRET,
-    }),
-    LinkedIn({
-      clientId: process.env.AUTH_LINKEDIN_ID,
-      clientSecret: process.env.AUTH_LINKEDIN_SECRET,
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user, account, trigger, session }) {
-      // `user` is only populated on initial sign-in
-      if (user) {
-        token.id = user.id as string;
-        token.role = (user as any).role || "SEEKER";
-        token.isAdmin = (user as any).isAdmin || false;
-
-        // Force strip potentially huge default fields from the JWT to prevent HTTP 431 errors
-        delete token.name;
-        delete token.email;
-        delete token.picture;
-        delete token.sub;
-
-        // For OAuth providers, trust the provider-verified email.
-        // Fetch from DB to get the canonical emailVerified value set by the PrismaAdapter.
-        if (account && account.provider !== "credentials") {
-          try {
-            const dbUser = await db.user.findUnique({
-              where: { id: user.id as string },
-              select: { emailVerified: true },
-            });
-            token.emailVerified = dbUser?.emailVerified ?? new Date();
-          } catch {
-            // Fallback: trust the provider if DB lookup fails
-            token.emailVerified = new Date();
-          }
-        } else {
-          token.emailVerified = (user as any).emailVerified || null;
-        }
-      }
-      if (trigger === "update" && session?.role) {
-        token.role = session.role;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as "SEEKER" | "REFERRER";
-        // @ts-expect-error - Custom property added to session
-        session.user.isAdmin = token.isAdmin as boolean;
-        session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
-
-        // Fetch dynamic user data from the DB to keep the JWT token size ultra-minimal.
-        try {
-          const dbUser = await db.user.findUnique({
-            where: { id: token.id as string },
-            select: { name: true, email: true },
-          });
-          if (dbUser) {
-            session.user.name  = dbUser.name;
-            session.user.email = dbUser.email;
-          }
-        } catch (e) {
-          console.error("Failed to fetch user data for session", e);
-        }
-      }
-      return session;
-    },
-  },
-};
-
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth(fullAuthConfig);
+export async function signOut() {
+  throw new Error("Do not use signOut from @/auth anymore. Use Supabase signOut.");
+}
