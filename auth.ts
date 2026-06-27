@@ -41,7 +41,17 @@ export async function auth() {
         image: dbUser.image,
       }
     };
-  } catch (err) {
+  } catch (err: any) {
+    // Next.js uses internal exceptions to bail out of static rendering and for redirects.
+    // If we swallow them, the build crashes with "Dynamic server usage" errors!
+    if (
+      err?.digest?.includes("DYNAMIC_SERVER_USAGE") ||
+      err?.digest?.includes("NEXT_REDIRECT") ||
+      err?.digest?.includes("NEXT_NOT_FOUND")
+    ) {
+      throw err;
+    }
+
     console.error("Auth wrapper error:", err);
     return null;
   }
