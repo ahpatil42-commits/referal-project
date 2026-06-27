@@ -25,7 +25,7 @@ interface Request {
     headline: string | null;
     linkedinUrl: string | null;
     skills: any;
-    resumeStoragePath: string | null;
+    resumeUrl: string | null;
     user: { email: string; name: string | null; profileNumber: string | null };
   };
   messages: Message[];
@@ -222,16 +222,18 @@ function RequestCard({ req, onUpdate, currentUserId }: { req: Request; onUpdate:
             🔗 LinkedIn Profile
           </a>
         )}
-        {req.seeker.resumeStoragePath && (
+        {req.seeker.resumeUrl && (
           <>
-            <a href={req.seeker.resumeStoragePath} target="_blank" rel="noopener noreferrer"
+            <a href={req.seeker.resumeUrl} target="_blank" rel="noopener noreferrer"
               style={{ fontSize: "0.8rem", color: "var(--color-primary-light)", textDecoration: "none" }}>
               📄 View Resume
             </a>
-            <a href={req.seeker.resumeStoragePath} download
-              style={{ fontSize: "0.8rem", color: "var(--color-accent)", textDecoration: "none" }}>
-              ⬇️ Download Resume
-            </a>
+            {localStatus === "ACCEPTED" && (
+              <a href={req.seeker.resumeUrl} download
+                style={{ fontSize: "0.8rem", color: "var(--color-accent)", textDecoration: "none" }}>
+                ⬇️ Download Resume
+              </a>
+            )}
           </>
         )}
       </div>
