@@ -57,6 +57,13 @@ export default function RegisterPage() {
 
     const fullMobile = data.mobile ? `${data.countryCode}${data.mobile}` : undefined;
 
+    // Validate that the Vercel Environment Variable is actually a JWT
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+    if (!anonKey.startsWith("eyJ")) {
+      setServerError("CRITICAL ERROR: Your Vercel environment variable NEXT_PUBLIC_SUPABASE_ANON_KEY is not a valid Supabase API key. It MUST start with 'eyJ'. Please go to Vercel Settings -> Environment Variables, update it, and redeploy.");
+      return;
+    }
+
     // 1. Send all data to Server Action
     // This bypasses the browser connecting to Supabase directly, fixing NetworkError!
     const response = await registerUser({ ...data, mobile: fullMobile, role: "SEEKER" });

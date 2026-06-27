@@ -58,10 +58,15 @@ export async function registerUser(data: {
 
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+    if (!anonKey.startsWith("eyJ")) {
+      return { error: "CRITICAL ERROR: Your Vercel environment variables contain an invalid Supabase API key. It MUST start with 'eyJ'. Please go to Vercel Settings -> Environment Variables, update it, and redeploy." };
+    }
+
     // 1. Sign up via Supabase (Server-side fetch prevents browser NetworkErrors)
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      anonKey
     );
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: data.email,
