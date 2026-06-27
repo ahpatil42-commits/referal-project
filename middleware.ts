@@ -1,6 +1,20 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 import { apiRateLimiter } from "@/lib/rate-limit-edge";
+
+/**
+ * Edge-compatible middleware.
+ *
+ * IMPORTANT: This file runs in Vercel's Edge Runtime.
+ * It MUST NOT import anything that depends on Node.js APIs
+ * (PrismaClient, node:crypto, bcryptjs, etc.).
+ *
+ * We use the edge-safe authConfig (from auth.config.ts) to read the
+ * JWT session.  The full auth.ts (with PrismaAdapter) is only used
+ * by Server Components and Server Actions in the Node.js runtime.
+ */
+const { auth } = NextAuth(authConfig);
 
 export default auth(async (req) => {
   const { nextUrl } = req;

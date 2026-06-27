@@ -1,22 +1,24 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
-import Facebook from "next-auth/providers/facebook";
-import LinkedIn from "next-auth/providers/linkedin";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db";
-import type { NextAuthConfig } from "next-auth";
+import { authConfig } from "@/auth.config";
 
-export const authConfig: NextAuthConfig = {
+/**
+ * Full auth configuration — Node.js runtime only.
+ *
+ * This extends the edge-safe authConfig with:
+ *   - PrismaAdapter (requires PrismaClient → Node.js)
+ *   - Credentials authorize() with bcryptjs password comparison
+ *   - DB queries in session callback
+ *   - signIn event with lastLoginAt update
+ *
+ * Only imported by Server Components, Server Actions, and API routes —
+ * NEVER by middleware.ts (which runs in Edge Runtime on Vercel).
+ */
+export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(db),
-  trustHost: true,
-  session: { 
-    strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60 // 7 days
-  },
-  pages: {
-    signIn: "/login",
-  },
   events: {
     async signIn({ user }) {
       if (user?.id) {
@@ -25,7 +27,7 @@ export const authConfig: NextAuthConfig = {
           data: { lastLoginAt: new Date() },
         }).catch(console.error);
       }
-    }
+    },
   },
   providers: [
     Credentials({
@@ -47,9 +49,7 @@ export const authConfig: NextAuthConfig = {
           return null;
         }
 
-        // Dynamically import bcryptjs to avoid Edge Runtime issues in NextAuth middleware
         const bcrypt = await import("bcryptjs");
-
         const passwordsMatch = await bcrypt.compare(
           credentials.password as string,
           user.password
@@ -57,7 +57,7 @@ export const authConfig: NextAuthConfig = {
 
         if (!passwordsMatch) return null;
 
-        const sessionUser = {
+        return {
           id: user.id,
           email: user.email,
           name: user.name,
@@ -66,93 +66,56 @@ export const authConfig: NextAuthConfig = {
           isAdmin: user.isAdmin,
           emailVerified: user.emailVerified,
         };
-        return sessionUser;
       },
     }),
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
-    Facebook({
-      clientId: process.env.AUTH_FACEBOOK_ID,
-      clientSecret: process.env.AUTH_FACEBOOK_SECRET,
-    }),
-    LinkedIn({
-      clientId: process.env.AUTH_LINKEDIN_ID,
-      clientSecret: process.env.AUTH_LINKEDIN_SECRET,
-    }),
+    // Spread the remaining providers from authConfig (Google, Facebook, LinkedIn)
+    // We need to re-declare them since NextAuth's providers array is replaced, not merged
+    ...(authConfig.providers?.filter(
+      (p: any) => p.id !== "credentials"
+    ) ?? []),
   ],
   callbacks: {
+    ...authConfig.callbacks,
     async jwt({ token, user, account, trigger, session }) {
-      // `user` is only populated on initial sign-in
-      if (user) {
-        token.id = user.id as string;
-        token.role = (user as any).role || "SEEKER"; // Default role for OAuth signups
-        token.isAdmin = (user as any).isAdmin || false;
+      // Reuse the edge-safe jwt callback first
+      const result = await authConfig.callbacks!.jwt!({ token, user, account, trigger, session } as any);
 
-        // Force strip potentially huge default fields from the JWT to prevent HTTP 431 errors
-        delete token.name;
-        delete token.email;
-        delete token.picture;
-        delete token.sub;
-
-        // For OAuth providers, trust the provider-verified email.
-        // Fetch from DB to get the canonical emailVerified value set by the PrismaAdapter.
-        if (account && account.provider !== "credentials") {
-          try {
-            const dbUser = await db.user.findUnique({
-              where: { id: user.id as string },
-              select: { emailVerified: true },
-            });
-            token.emailVerified = dbUser?.emailVerified ?? new Date();
-          } catch {
-            // Fallback: trust the provider if DB lookup fails
-            token.emailVerified = new Date();
-          }
-        } else {
-          token.emailVerified = (user as any).emailVerified || null;
+      // For OAuth sign-ins, fetch emailVerified from DB
+      if (user && account && account.provider !== "credentials") {
+        try {
+          const dbUser = await db.user.findUnique({
+            where: { id: user.id as string },
+            select: { emailVerified: true },
+          });
+          result.emailVerified = dbUser?.emailVerified ?? new Date();
+        } catch {
+          result.emailVerified = new Date();
         }
       }
-      if (trigger === "update" && session?.role) {
-        token.role = session.role;
-      }
-      return token;
+
+      return result;
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as "SEEKER" | "REFERRER";
-        // @ts-expect-error - Custom property added to session
-        session.user.isAdmin = token.isAdmin as boolean;
-        session.user.emailVerified = token.emailVerified ? new Date(token.emailVerified as string) : null;
-        
-        // Fetch dynamic user data from the DB to keep the JWT token size ultra-minimal.
-        // IMPORTANT: We deliberately do NOT include `image` here — Base64 data URIs
-        // stored by the old /api/upload/image endpoint would bloat the session cookie
-        // and cause Vercel's 494 REQUEST_HEADER_TOO_LARGE error on every page load.
-        // Avatar images are fetched separately via /api/profile/avatar.
+      // Run the base session callback first
+      const result = await authConfig.callbacks!.session!({ session, token } as any);
+
+      // Enrich with DB data (only possible in Node runtime)
+      if (token?.id) {
         try {
           const dbUser = await db.user.findUnique({
             where: { id: token.id as string },
             select: { name: true, email: true },
           });
-          if (dbUser) {
-            session.user.name  = dbUser.name;
-            session.user.email = dbUser.email;
-            // Deliberately omit session.user.image – fetch via /api/profile/avatar instead
+          if (dbUser && result.user) {
+            result.user.name = dbUser.name;
+            result.user.email = dbUser.email;
           }
         } catch (e) {
           console.error("Failed to fetch user data for session", e);
         }
       }
-      return session;
+
+      return result;
     },
   },
-};
-
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth(authConfig);
+});
