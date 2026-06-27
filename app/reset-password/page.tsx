@@ -1,32 +1,39 @@
 "use client";
 
-import { useState, useTransition, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 function ResetPasswordForm() {
   const [isPending, startTransition] = useTransition();
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  const token = searchParams.get("token");
-  const email = searchParams.get("email");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [sessionReady, setSessionReady] = useState(false);
+  const [sessionError, setSessionError] = useState(false);
 
-  if (!token || !email) {
-    return (
-      <div style={{ textAlign: "center", color: "var(--color-error, #ef4444)" }}>
-        <p>Invalid or missing reset token.</p>
-        <Link href="/forgot-password" style={{ color: "var(--color-primary-light)", marginTop: "1rem", display: "inline-block" }}>
-          Request a new link
-        </Link>
-      </div>
+  // Supabase puts the access_token + refresh_token in the URL hash after the
+  // user clicks the reset link. We exchange them for a session here so that
+  // updateUser() works.
+  useEffect(() => {
+    const supabase = createClient();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "PASSWORD_RECOVERY" && session) {
+          setSessionReady(true);
+        } else if (!session) {
+          setSessionError(true);
+        }
+      }
     );
-  }
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,22 +48,41 @@ function ResetPasswordForm() {
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/auth/reset-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, token, password })
-        });
-        
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
+        const supabase = createClient();
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw new Error(error.message);
 
         toast.success("Password reset successfully! You can now log in.");
+        await supabase.auth.signOut();
         router.push("/login");
       } catch (err: any) {
         toast.error(err.message || "Failed to reset password");
       }
     });
   };
+
+  if (sessionError) {
+    return (
+      <div style={{ textAlign: "center", color: "var(--color-error, #ef4444)" }}>
+        <p>This reset link has expired or is invalid.</p>
+        <Link
+          href="/forgot-password"
+          style={{ color: "var(--color-primary-light)", marginTop: "1rem", display: "inline-block" }}
+        >
+          Request a new link
+        </Link>
+      </div>
+    );
+  }
+
+  if (!sessionReady) {
+    return (
+      <div style={{ textAlign: "center", color: "var(--color-text-muted)", padding: "2rem" }}>
+        <Loader2 className="animate-spin" style={{ margin: "0 auto 1rem" }} />
+        <p style={{ fontSize: "0.9rem" }}>Validating your reset link…</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem", textAlign: "left" }}>
