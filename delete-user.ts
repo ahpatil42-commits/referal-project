@@ -11,7 +11,7 @@ const supabaseAdmin = createClient(
 );
 
 async function main() {
-  const email = "abhijeetpatil1610@gmail.com";
+  const email = process.argv[2] || "abhijeetpatil1610@gmail.com";
   console.log(`Deleting user with email: ${email}`);
 
   // 1. Get user from Supabase to find their Auth ID
