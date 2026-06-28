@@ -265,6 +265,7 @@ export async function registerUser(data: {
       redirect: `/verify-otp?email=${encodeURIComponent(data.email)}`
     };
   } catch (error) {
+    console.error("[Server Action] Unexpected registerUser error:", error);
     return { error: "Something went wrong" };
   }
 }
