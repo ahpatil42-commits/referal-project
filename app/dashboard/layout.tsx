@@ -21,7 +21,9 @@ export default async function DashboardLayout({
     select: { image: true, emailVerified: true, termsAcceptedAt: true }
   });
 
-
+  if (!user?.emailVerified) {
+    redirect(`/verify-otp?email=${encodeURIComponent(session.user.email ?? "")}`);
+  }
 
   return (
     <>

@@ -35,8 +35,8 @@ export async function auth() {
         name: dbUser.name,
         role: dbUser.role as "SEEKER" | "REFERRER",
         isAdmin: dbUser.isAdmin,
-        emailVerified: authData.user.email_confirmed_at 
-          ? new Date(authData.user.email_confirmed_at) 
+        emailVerified: dbUser.emailVerified 
+          ? new Date(dbUser.emailVerified) 
           : null,
         image: dbUser.image,
       }

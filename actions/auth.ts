@@ -108,10 +108,12 @@ export async function loginUser(data: { email: string; password: string }) {
       return { error: `Server failed to connect to Auth: ${error.message}` };
     }
 
-    // Enforce mandatory email verification
-    if (!authData.user?.email_confirmed_at) {
+    const dbUser = await db.user.findUnique({ where: { email: data.email } });
+
+    // Enforce mandatory email verification via Prisma OTP
+    if (!dbUser?.emailVerified) {
       await supabase.auth.signOut();
-      return { error: "Please verify your email address before logging in. Check your inbox for a confirmation link." };
+      return { error: "Please verify your email address before logging in. Check your inbox for a confirmation code." };
     }
 
     return { success: true };
@@ -199,23 +201,23 @@ export async function registerUser(data: {
 
     await ensureProfileNumber(createdUser.id);
 
-    // [TEMPORARILY DISABLED] Generate 6-digit OTPs
-    // const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate 6-digit OTPs
+    const emailOtp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    // // Clear any existing OTPs for this email before creating a new one
-    // await db.verificationOTP.deleteMany({
-    //   where: { identifier: data.email }
-    // });
+    // Clear any existing OTPs for this email before creating a new one
+    await db.verificationOTP.deleteMany({
+      where: { identifier: data.email }
+    });
 
-    // await db.verificationOTP.create({
-    //   data: {
-    //     identifier: data.email,
-    //     otp: emailOtp,
-    //     expires: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
-    //   }
-    // });
+    await db.verificationOTP.create({
+      data: {
+        identifier: data.email,
+        otp: emailOtp,
+        expires: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
+      }
+    });
 
-    // await sendOTPEmail(data.email, emailOtp);
+    await sendOTPEmail(data.email, emailOtp);
 
     let mobileOtp: string | undefined;
     if (data.mobile) {
@@ -250,17 +252,17 @@ export async function registerUser(data: {
       await sendCorporateVerificationEmail(data.corporateEmail, token);
     }
     
-    // Redirect to the OTP verification page if mobile provided, else login
+    // Redirect to the OTP verification page
     if (data.mobile) {
       return { 
-        success: "Account created! Please verify your mobile OTP.", 
-        redirect: `/verify-otp?mobile=${encodeURIComponent(data.mobile)}`
+        success: "Account created! Please verify your email and mobile OTPs.", 
+        redirect: `/verify-otp?email=${encodeURIComponent(data.email)}&mobile=${encodeURIComponent(data.mobile)}`
       };
     }
 
     return {
-      success: "Account created! You can now log in.",
-      redirect: "/login"
+      success: "Account created! Please check your email for the verification code.",
+      redirect: `/verify-otp?email=${encodeURIComponent(data.email)}`
     };
   } catch (error) {
     return { error: "Something went wrong" };

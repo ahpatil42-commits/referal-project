@@ -57,18 +57,11 @@ export default async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isLoggedIn       = !!user;
-  const emailConfirmed   = !!user?.email_confirmed_at;
   // Role is stored in Supabase user_metadata when we sign up
   const role: string     = (user?.user_metadata?.role as string) ?? "SEEKER";
 
   // ── Redirect authenticated users away from auth pages ────────────────────
   if (isAuthRoute && isLoggedIn) {
-    if (!emailConfirmed) {
-      return NextResponse.redirect(
-        new URL("/pending-verification", nextUrl),
-        { headers: response.headers }
-      );
-    }
     if (role === "REFERRER") {
       return NextResponse.redirect(
         new URL("/dashboard/referrer", nextUrl),
@@ -92,13 +85,6 @@ export default async function middleware(request: NextRequest) {
 
   // ── Role-based access control for authenticated dashboard users ───────────
   if (isLoggedIn && (isDashboardRoute || nextUrl.pathname.startsWith("/portal-admin"))) {
-    // Email must be verified
-    if (!emailConfirmed) {
-      return NextResponse.redirect(
-        new URL("/pending-verification", nextUrl),
-        { headers: response.headers }
-      );
-    }
 
     // /dashboard → redirect to role-specific dashboard
     if (
