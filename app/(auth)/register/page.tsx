@@ -24,6 +24,7 @@ const RegisterSchema = z
     terms: z.boolean().refine((val) => val === true, {
       message: "You must accept the Terms and Conditions",
     }),
+    role: z.enum(["SEEKER", "REFERRER"], { required_error: "Please select a role" }),
   });
 
 type RegisterFormValues = z.infer<typeof RegisterSchema>;
@@ -48,6 +49,7 @@ export default function RegisterPage() {
       countryCode: "+1",
       mobile: "",
       terms: false,
+      role: undefined as unknown as "SEEKER" | "REFERRER",
     },
   });
 
@@ -66,7 +68,7 @@ export default function RegisterPage() {
 
     // 1. Send all data to Server Action
     // This bypasses the browser connecting to Supabase directly, fixing NetworkError!
-    const response = await registerUser({ ...data, mobile: fullMobile, role: "SEEKER" });
+    const response = await registerUser({ ...data, mobile: fullMobile, role: data.role });
 
     if (response.error) {
       setServerError(response.error);
@@ -264,6 +266,26 @@ export default function RegisterPage() {
             {errors.password && (
               <p className="form-error">
                 <span>✕</span> {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          {/* Role Selection */}
+          <div>
+            <label className="form-label" style={{ marginBottom: "0.5rem", display: "block" }}>I am a...</label>
+            <div style={{ display: "flex", gap: "1.5rem" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", color: "var(--color-text-secondary)" }}>
+                <input type="radio" value="SEEKER" {...register("role")} />
+                Job Seeker
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer", color: "var(--color-text-secondary)" }}>
+                <input type="radio" value="REFERRER" {...register("role")} />
+                Referrer (Employee)
+              </label>
+            </div>
+            {errors.role && (
+              <p className="form-error">
+                <span>✕</span> {errors.role.message}
               </p>
             )}
           </div>
