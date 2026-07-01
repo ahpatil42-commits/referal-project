@@ -25,7 +25,9 @@ export async function GET(req: Request) {
       // Greenhouse public API for jobs
       const res = await fetch(`https://boards-api.greenhouse.io/v1/boards/${company.boardToken}/jobs`);
       if (!res.ok) {
-        console.warn(`Failed to fetch jobs for ${company.name}`);
+        import('@/lib/logger').then(({ logger }) => {
+          logger.warn({ msg: 'Failed to fetch jobs', company: company.name, status: res.status });
+        });
         continue;
       }
 
@@ -57,7 +59,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ success: true, message: `Synced ${newJobsCount} new jobs.` });
   } catch (error: any) {
-    console.error("[CRON_SYNC_JOBS_ERROR]", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[CRON_SYNC_JOBS_ERROR]', error });
+    });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

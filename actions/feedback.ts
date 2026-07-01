@@ -31,7 +31,9 @@ export async function submitFeedback(data: { type: "BUG" | "FEATURE_REQUEST" | "
 
     return { success: "Thank you! Your feedback has been submitted successfully." };
   } catch (error) {
-    console.error("[FEEDBACK_ERROR]", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[FEEDBACK_ERROR]', error });
+    });
     return { error: "Failed to submit feedback. Please try again later." };
   }
 }

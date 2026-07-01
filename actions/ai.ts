@@ -49,13 +49,17 @@ export async function getMatchExplanation(referrerId: string) {
       const explanation = response.text || "You are a strong match for this referral!";
       return { success: explanation.trim() };
     } catch (apiError) {
-      console.warn("Gemini connection failed, using fallback:", apiError);
+      import('./../lib/logger').then(({ logger }) => {
+        logger.warn({ msg: 'Gemini connection failed, using fallback', apiError });
+      });
       return { 
         success: "Since you both share common professional domains, you appear to be a great match for a referral!" 
       };
     }
   } catch (error: any) {
-    console.error("AI Explanation Error:", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'AI Explanation Error', error });
+    });
     return { error: "Failed to generate explanation." };
   }
 }

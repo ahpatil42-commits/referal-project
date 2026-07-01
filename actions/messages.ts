@@ -56,12 +56,16 @@ export async function sendMessage(requestId: string, content: string) {
     try {
       await pusherServer.trigger(`chat-request-${requestId}`, "new-message", message);
     } catch (pusherError) {
-      console.warn("Pusher trigger failed (missing keys?):", pusherError);
+      import('./../lib/logger').then(({ logger }) => {
+        logger.warn({ msg: 'Pusher trigger failed (missing keys?)', pusherError });
+      });
     }
 
     return { success: true, message };
   } catch (error) {
-    console.error("Failed to send message:", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Failed to send message', error });
+    });
     return { error: "Failed to send message" };
   }
 }
@@ -96,7 +100,9 @@ export async function getMessages(requestId: string) {
 
     return { messages };
   } catch (error) {
-    console.error("Failed to fetch messages:", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Failed to fetch messages', error });
+    });
     return { error: "Failed to fetch messages" };
   }
 }

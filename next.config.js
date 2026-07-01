@@ -70,12 +70,15 @@ const nextConfig = {
 
 const { withSentryConfig } = require("@sentry/nextjs");
 
+const sentryOrg = process.env.SENTRY_ORG || undefined;
+const sentryProject = process.env.SENTRY_PROJECT || undefined;
+
 module.exports = withSentryConfig(
   nextConfig,
   {
     silent: true,
-    org: "your-org",
-    project: "your-project",
+    org: sentryOrg,
+    project: sentryProject,
   },
   {
     tunnelRoute: "/monitoring",

@@ -50,7 +50,9 @@ export const apiRateLimiter = {
       };
     } catch (error) {
       // Fail-open on network errors to avoid blocking legitimate users
-      console.error("[RateLimit] Upstash error, failing open:", error);
+      import('./logger').then(({ logger }) => {
+        logger.error({ msg: '[RateLimit] Upstash error, failing open', error });
+      });
       return { success: true, limit: 20, remaining: 20 };
     }
   },

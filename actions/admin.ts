@@ -98,7 +98,9 @@ export async function toggleUserSuspension(userId: string, isSuspended: boolean)
     revalidatePath("/admin");
     return { success: true };
   } catch (error) {
-    console.error("Failed to toggle suspension:", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Failed to toggle suspension', error });
+    });
     return { error: "Failed to update user." };
   }
 }

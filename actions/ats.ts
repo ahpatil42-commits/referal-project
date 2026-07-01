@@ -42,7 +42,9 @@ export async function updateAtsSettings(
     revalidatePath("/dashboard/referrer/profile");
     return { success: "ATS Settings updated and encrypted!" };
   } catch (err) {
-    console.error("[UPDATE_ATS_SETTINGS]", err);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[UPDATE_ATS_SETTINGS]', err });
+    });
     return { error: "Failed to update ATS settings." };
   }
 }

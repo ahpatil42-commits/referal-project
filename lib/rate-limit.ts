@@ -31,7 +31,9 @@ export class RedisRateLimiter {
 
       return { success: true, limit: this.maxRequests, remaining: this.maxRequests - current };
     } catch (error) {
-      console.error("Redis Rate Limiter Error:", error);
+      import('./logger').then(({ logger }) => {
+        logger.error({ msg: 'Redis Rate Limiter Error', error });
+      });
       // Fallback: allow on redis failure
       return { success: true, limit: this.maxRequests, remaining: 1 };
     }

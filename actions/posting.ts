@@ -58,7 +58,9 @@ export async function createReferralPosting(data: z.infer<typeof PostingSchema>)
     revalidatePath("/dashboard/seeker/browse");
     return { success: "Posting created successfully!" };
   } catch (error) {
-    console.error("Create posting error:", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Create posting error', error });
+    });
     return { error: "Failed to create posting" };
   }
 }
@@ -92,7 +94,9 @@ export async function togglePostingStatus(postingId: string, isActive: boolean) 
     revalidatePath("/dashboard/seeker/browse");
     return { success: "Status updated" };
   } catch (error) {
-    console.error("Toggle posting error:", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Toggle posting error', error });
+    });
     return { error: "Failed to update posting" };
   }
 }
@@ -126,7 +130,9 @@ export async function deactivatePosting(postingId: string) {
     revalidatePath("/dashboard/seeker/browse");
     return { success: "Posting deleted" };
   } catch (error) {
-    console.error("Delete posting error:", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Delete posting error', error });
+    });
     return { error: "Failed to delete posting" };
   }
 }

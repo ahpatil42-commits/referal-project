@@ -82,7 +82,9 @@ export async function POST(req: Request) {
     // Redirect to checkout URL
     return NextResponse.redirect(checkoutSession.url, 303);
   } catch (error: any) {
-    console.error("[STRIPE_CHECKOUT_ERROR]", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[STRIPE_CHECKOUT_ERROR]', error });
+    });
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

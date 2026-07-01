@@ -22,5 +22,9 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 5 * 60 * 1000,
+    env: {
+      AUTH_SECRET: process.env.AUTH_SECRET || 'playwright-test-secret',
+      NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+    },
   },
 });

@@ -64,7 +64,9 @@ export async function analyzeFeedbackWithAI() {
 
     return { analysis: response.text };
   } catch (error) {
-    console.error("[AI_ANALYSIS_ERROR]", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[AI_ANALYSIS_ERROR]', error });
+    });
     return { error: "Failed to generate AI analysis." };
   }
 }

@@ -235,7 +235,9 @@ export async function registerUser(data: {
       });
       // TODO: Replace with a real SMS provider (e.g. Twilio) when ready.
       // For now, log to console so OTPs are visible in server logs during dev.
-      console.log(`[SMS OTP] To: ${data.mobile} — Code: ${mobileOtp}`);
+      import('./../lib/logger').then(({ logger }) => {
+        logger.info({ msg: 'SMS OTP (dev)', to: data.mobile, code: mobileOtp });
+      });
 
     }
 
@@ -246,7 +248,7 @@ export async function registerUser(data: {
         data: {
           identifier: data.corporateEmail,
           token,
-          expires: new Date(Date.now() + 24 * 3600 * 1000)
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         }
       });
       await sendCorporateVerificationEmail(data.corporateEmail, token);

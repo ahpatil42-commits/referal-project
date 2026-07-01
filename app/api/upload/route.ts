@@ -59,7 +59,9 @@ export async function POST(request: Request): Promise<NextResponse> {
           }
 
         } catch (error) {
-          console.error("Webhook processing error:", error);
+          import('@/lib/logger').then(({ logger }) => {
+            logger.error({ msg: 'Webhook processing error', error });
+          });
           throw new Error('Could not update user database');
         }
       },
@@ -67,11 +69,9 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     return NextResponse.json(jsonResponse);
   } catch (error) {
-    console.error("Vercel Blob Upload Error:", error);
-    if (error instanceof Error) {
-      console.error("Error Message:", error.message);
-      console.error("Error Stack:", error.stack);
-    }
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Vercel Blob Upload Error', error });
+    });
     return NextResponse.json(
       { error: (error as Error).message },
       { status: 400 },

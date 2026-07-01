@@ -42,7 +42,9 @@ export async function switchUserRole(newRole: "SEEKER" | "REFERRER") {
 
     return { success: true, redirectUrl };
   } catch (error) {
-    console.error("[SWITCH_ROLE]", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[SWITCH_ROLE]', error });
+    });
     return { error: "Failed to switch role." };
   }
 }
@@ -58,7 +60,9 @@ export async function acceptTermsOfService() {
     });
     return { success: true };
   } catch (error) {
-    console.error("[ACCEPT_TERMS]", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[ACCEPT_TERMS]', error });
+    });
     return { error: "Failed to accept terms." };
   }
 }

@@ -85,7 +85,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("[ROAST_RESUME]", error);
-    return NextResponse.json({ error: "Internal error analyzing resume" }, { status: 500 });
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[ROAST_RESUME]', error });
+    });
   }
 }

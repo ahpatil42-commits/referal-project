@@ -77,7 +77,9 @@ ${text.substring(0, 8000)}
 
     return NextResponse.json(parsedData);
   } catch (error) {
-    console.error("JD parse error:", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'JD parse error', error });
+    });
     return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to parse JD" }, { status: 500 });
   }
 }

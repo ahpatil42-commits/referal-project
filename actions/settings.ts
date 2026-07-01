@@ -57,7 +57,9 @@ export async function sendVerificationOtp(type: "email" | "mobile") {
       await sendOTPEmail(identifier, otp);
     } else {
       // TODO: Replace with a real SMS provider (e.g. Twilio) when ready.
-      console.log(`[SMS OTP] To: ${identifier} — Code: ${otp}`);
+      import('./../lib/logger').then(({ logger }) => {
+        logger.info({ msg: 'SMS OTP (dev)', to: identifier, code: otp });
+      });
 
     }
 

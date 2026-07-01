@@ -93,7 +93,9 @@ export async function verifyOTP(data: {
 
     return { success: "Verification successful! You can now sign in." };
   } catch (error) {
-    console.error("Verification error:", error);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Verification error', error });
+    });
     return { error: "Something went wrong" };
   }
 }

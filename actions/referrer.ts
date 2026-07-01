@@ -97,7 +97,9 @@ export async function updateReferrerProfile(
     revalidatePath("/dashboard/seeker/browse");
     return { success: "Profile updated!" };
   } catch (err) {
-    console.error("[UPDATE_REFERRER_PROFILE]", err);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[UPDATE_REFERRER_PROFILE]', err });
+    });
     return { error: "Failed to save profile." };
   }
 }
@@ -182,7 +184,9 @@ export async function updateRequestStatus(
     revalidatePath("/dashboard/seeker/requests");
     return { success: `Request ${status.toLowerCase()}.` };
   } catch (err) {
-    console.error("[UPDATE_REQUEST_STATUS]", err);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[UPDATE_REQUEST_STATUS]', err });
+    });
     return { error: "Failed to update request." };
   }
 }
@@ -231,7 +235,9 @@ export async function updateAtsConfig(
     revalidatePath("/dashboard/referrer/profile");
     return { success: "ATS configuration saved securely." };
   } catch (err) {
-    console.error("[UPDATE_ATS_CONFIG]", err);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[UPDATE_ATS_CONFIG]', err });
+    });
     return { error: "Failed to save ATS configuration." };
   }
 }
@@ -253,7 +259,9 @@ export async function getDecryptedAtsKey(
   try {
     return decrypt(profile.atsApiKey);
   } catch {
-    console.error("[ATS] Failed to decrypt API key for profile:", referrerProfileId);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[ATS] Failed to decrypt API key for profile', referrerProfileId });
+    });
     return null;
   }
 }

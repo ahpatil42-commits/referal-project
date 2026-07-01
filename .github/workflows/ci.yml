@@ -86,7 +86,9 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/referralai_test
 
       - name: Run Playwright E2E tests
-        run: npx playwright test
+        run: |
+          npx playwright install --with-deps
+          npm run test
         env:
           AUTH_SECRET: ci-test-secret-at-least-32-characters-long
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/referralai_test

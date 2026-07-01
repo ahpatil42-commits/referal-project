@@ -79,7 +79,9 @@ Be professional but firm. Keep your responses concise (under 100 words).`;
     return NextResponse.json({ text: aiMessage });
 
   } catch (error: any) {
-    console.error("[MOCK_INTERVIEW_ERROR]", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[MOCK_INTERVIEW_ERROR]', error });
+    });
     return NextResponse.json({ error: "Failed to generate AI response" }, { status: 500 });
   }
 }

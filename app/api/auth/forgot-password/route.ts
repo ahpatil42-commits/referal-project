@@ -35,7 +35,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[FORGOT_PASSWORD_ERROR]", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[FORGOT_PASSWORD_ERROR]', error });
+    });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

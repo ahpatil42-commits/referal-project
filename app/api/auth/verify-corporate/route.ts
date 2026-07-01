@@ -45,7 +45,9 @@ export async function GET(request: Request) {
     // Redirect to a success page or login
     return NextResponse.redirect(new URL("/dashboard/referrer/profile?verified=true", request.url));
   } catch (error) {
-    console.error("[VERIFY_CORPORATE]", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[VERIFY_CORPORATE]', error });
+    });
     return new NextResponse("Internal error", { status: 500 });
   }
 }

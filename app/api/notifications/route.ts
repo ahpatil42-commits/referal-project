@@ -17,7 +17,9 @@ export async function GET() {
 
     return NextResponse.json({ notifications });
   } catch (error) {
-    console.error("Notifications fetch error:", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Notifications fetch error', error });
+    });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
@@ -47,7 +49,9 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Notification update error:", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Notification update error', error });
+    });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

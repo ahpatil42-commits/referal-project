@@ -24,7 +24,9 @@ export async function POST(req: Request) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err: any) {
-      console.error(`[WEBHOOK_ERROR] Signature verification failed: ${err.message}`);
+      import('@/lib/logger').then(({ logger }) => {
+        logger.error({ msg: `[WEBHOOK_ERROR] Signature verification failed`, error: err?.message });
+      });
       return NextResponse.json({ error: "Webhook signature verification failed" }, { status: 400 });
     }
 
@@ -47,7 +49,9 @@ export async function POST(req: Request) {
               credits: 10,
             },
           });
-          console.log(`[STRIPE] Upgraded user ${userId} to PRO`);
+          import('@/lib/logger').then(({ logger }) => {
+            logger.info({ msg: 'STRIPE: user upgraded to PRO', userId });
+          });
         }
         break;
       }
@@ -72,7 +76,9 @@ export async function POST(req: Request) {
                 credits: 1, // Reset credits
               }
             });
-            console.log(`[STRIPE] Downgraded user ${user.id} to FREE`);
+            import('@/lib/logger').then(({ logger }) => {
+              logger.info({ msg: 'STRIPE: user downgraded to FREE', userId: user.id });
+            });
           } else if (status === "active") {
              await db.user.update({
               where: { id: user.id },
@@ -84,12 +90,16 @@ export async function POST(req: Request) {
       }
       
       default:
-        console.log(`[STRIPE] Unhandled event type: ${event.type}`);
+        import('@/lib/logger').then(({ logger }) => {
+          logger.info({ msg: 'STRIPE: Unhandled event type', eventType: event.type });
+        });
     }
 
     return NextResponse.json({ received: true }, { status: 200 });
   } catch (error: any) {
-    console.error("[STRIPE_WEBHOOK_INTERNAL_ERROR]", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[STRIPE_WEBHOOK_INTERNAL_ERROR]', error });
+    });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

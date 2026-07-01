@@ -63,7 +63,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[ANALYTICS_INGEST_ERROR]", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[ANALYTICS_INGEST_ERROR]', error });
+    });
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

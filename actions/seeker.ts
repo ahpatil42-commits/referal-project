@@ -70,7 +70,9 @@ export async function updateSeekerProfile(
     revalidatePath("/dashboard/seeker");
     return { success: "Profile updated!" };
   } catch (err) {
-    console.error("[UPDATE_SEEKER_PROFILE]", err);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[UPDATE_SEEKER_PROFILE]', err });
+    });
     return { error: "Failed to save profile." };
   }
 }
@@ -200,7 +202,9 @@ export async function sendReferralRequest(
 
     return { success: "Referral request sent successfully!" };
   } catch (err) {
-    console.error("[SEND_REFERRAL_REQUEST]", err);
+    import('./../lib/logger').then(({ logger }) => {
+      logger.error({ msg: '[SEND_REFERRAL_REQUEST]', err });
+    });
     return { error: "Failed to send request." };
   }
 }

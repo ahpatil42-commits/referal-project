@@ -46,7 +46,9 @@ export async function POST(req: Request) {
     try {
       decryptedAtsApiKey = decrypt(atsApiKey);
     } catch (e) {
-      console.error("[ATS_PUSH_ERROR] Failed to decrypt API key", e);
+      import('@/lib/logger').then(({ logger }) => {
+        logger.error({ msg: '[ATS_PUSH_ERROR] Failed to decrypt API key', error: e });
+      });
       return NextResponse.json({ error: "Invalid or corrupted ATS API key." }, { status: 500 });
     }
 
@@ -91,7 +93,9 @@ export async function POST(req: Request) {
       */
 
       // Simulated Success for MVP
-      console.log("[ATS_PUSH] Successfully pushed candidate to Greenhouse:", payload);
+      import('@/lib/logger').then(({ logger }) => {
+        logger.info({ msg: 'ATS_PUSH: Successfully pushed candidate to Greenhouse', payload });
+      });
 
       // Optionally, mark request as COMPLETED in our DB
       await db.referralRequest.update({
@@ -104,7 +108,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ error: `Unsupported ATS provider: ${atsProvider}` }, { status: 400 });
   } catch (error: any) {
-    console.error("[ATS_PUSH_ERROR]", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+      import('@/lib/logger').then(({ logger }) => {
+        logger.error({ msg: '[ATS_PUSH_ERROR]', error });
+      });
   }
 }

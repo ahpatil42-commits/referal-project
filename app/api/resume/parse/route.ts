@@ -55,7 +55,9 @@ export async function POST(request: Request) {
 
     // Check if GEMINI_API_KEY is available
     if (!process.env.GEMINI_API_KEY) {
-      console.warn("GEMINI_API_KEY is missing. Falling back to simple heuristics.");
+      import('@/lib/logger').then(({ logger }) => {
+        logger.warn({ msg: 'GEMINI_API_KEY is missing, falling back to heuristics' });
+      });
       // Fallback heuristics just in case
       return NextResponse.json({
         headline: "Software Professional",
@@ -113,7 +115,9 @@ ${text.substring(0, 15000)}
       resumeStoragePath: fileUrl
     });
   } catch (error) {
-    console.error("Resume parse error:", error);
+    import('@/lib/logger').then(({ logger }) => {
+      logger.error({ msg: 'Resume parse error', error });
+    });
     return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to parse resume" }, { status: 500 });
   }
 }

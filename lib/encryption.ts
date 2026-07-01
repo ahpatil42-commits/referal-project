@@ -14,7 +14,9 @@ const getKey = () => {
     return Buffer.from(envKey, 'hex');
   }
   // Fallback dev key
-  console.warn("WARNING: Using default dev encryption key. Set ENCRYPTION_KEY (32 chars) in production.");
+  import('./logger').then(({ logger }) => {
+    logger.warn({ msg: 'Using default dev encryption key. Set ENCRYPTION_KEY (32 chars) in production.' });
+  });
   return Buffer.from("12345678901234567890123456789012", 'utf-8');
 };
 
@@ -49,7 +51,9 @@ export function decrypt(encryptedData: string): string {
     
     return decrypted;
   } catch (error) {
-    console.error("Decryption failed:", error);
+    import('./logger').then(({ logger }) => {
+      logger.error({ msg: 'Decryption failed', error });
+    });
     throw new Error("Failed to decrypt data.");
   }
 }
